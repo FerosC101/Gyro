@@ -1,15 +1,19 @@
 package com.example.controller;
 
+import com.example.connection.DBConnection;
+
+import java.security.PrivateKey;
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Scanner;
 import static com.example.connection.DBConnection.getConnection;
 
 public class UserController {
+    private DBConnection dbConnection;
 
-    private final Scanner scanner;
-
-    public UserController(Scanner scanner) {
-        this.scanner = scanner;
+    public UserController() {
+        dbConnection = new DBConnection();
     }
 
     public void register(String username, String password) throws SQLException {
@@ -91,10 +95,66 @@ public class UserController {
         }
     }
 
+    public void collectAdditionalInfo(int userId) throws SQLException {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter your full name: ");
+        String fullName = scanner.nextLine();
+
+        System.out.print("Enter your birthdate (MM-DD-YYYY): ");
+        String birthdateStr = scanner.nextLine();
+        java.sql.Date birthdate;
+        try {
+            birthdate = new java.sql.Date(new SimpleDateFormat("MM-dd-yyyy").parse(birthdateStr).getTime());
+        } catch (ParseException e) {
+            System.err.println("Invalid date format. Please use MM-DD-YYYY.");
+            return;
+        }
+
+        System.out.print("Enter your contact number: ");
+        String contactNumber = scanner.nextLine();
+
+        System.out.print("Enter your email: ");
+        String email = scanner.nextLine();
+
+        System.out.print("Enter your age: ");
+        int age = scanner.nextInt();
+
+        System.out.print("Enter your height: ");
+        float height = scanner.nextFloat();
+
+        System.out.print("Enter your weight: ");
+        float weight = scanner.nextFloat();
+
+        scanner.nextLine();
+        System.out.print("Enter your gender (Male/Female/Other): ");
+        String gender = scanner.nextLine();
+
+        String insertDetailsSQL = "INSERT INTO user_details (user_id, full_name, birthday, contact_number, email, age, height, weight, gender) " + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(insertDetailsSQL)) {
+
+            pstmt.setInt(1, userId);
+            pstmt.setString(2, fullName);
+            pstmt.setDate(3, birthdate);
+            pstmt.setString(4, contactNumber);
+            pstmt.setString(5, email);
+            pstmt.setInt(6, age);
+            pstmt.setFloat(7, height);
+            pstmt.setFloat(8, weight);
+            pstmt.setString(9, gender);
+
+            int rowsInserted = pstmt.executeUpdate();
+            if (rowsInserted > 0) {
+                System.out.println("Additional information collected and saved successfully!");
+            } else {
+                System.out.println("Failed to save additional information.");
+            }
+        }
+    }
 
     public void editStats(int userId) {
-        // Example edit stats feature placeholder
-        System.out.println("Edit stats feature coming soon for user ID: " + userId);
-        // Additional stat-editing logic to be implemented here
+        System.out.println("Edit stats for user ID: " + userId);
     }
 }
