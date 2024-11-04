@@ -93,8 +93,7 @@ public class UserController {
 
 
     public void editStats(int userId) {
-        // Example edit stats feature placeholder
-        System.out.println("Edit stats feature coming soon for user ID: " + userId);
+        System.out.println("Edit stats for user ID: " + userId);
         // Additional stat-editing logic to be implemented here
     }
 }
