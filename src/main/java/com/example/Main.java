@@ -7,7 +7,7 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        UserController userController = new UserController(scanner);
+        UserController userController = new UserController();
 
         while (true) {
             System.out.println("Welcome to WANDAT");

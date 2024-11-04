@@ -8,3 +8,19 @@ CREATE TABLE credentials (
     notes TEXT,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
+
+CREATE TABLE user_details (
+    user_id BIGINT UNSIGNED PRIMARY KEY,
+    full_name VARCHAR(100),
+    birthday DATE,
+    contact_number VARCHAR(15),
+    email VARCHAR(100),
+    age INT,
+    height FLOAT,
+    weight FLOAT,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+ALTER TABLE user_details
+ADD COLUMN gender VARCHAR(15);
+

@@ -1,15 +1,19 @@
 package com.example.controller;
 
+import com.example.connection.DBConnection;
+
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Scanner;
 import static com.example.connection.DBConnection.getConnection;
 
 public class UserController {
+    
+    private DBConnection dbConnection;
 
-    private final Scanner scanner;
-
-    public UserController(Scanner scanner) {
-        this.scanner = scanner;
+    public UserController() {
+        dbConnection = new DBConnection();
     }
 
     public void register(String username, String password) throws SQLException {
@@ -90,11 +94,41 @@ public class UserController {
             throw e;
         }
     }
+    
+    public static void saveUserDetails(int user_id, String full_name, Date birthday, String contact_number, String email, int age, String gender, float height, float weight) throws SQLException {
+        String insertDetailsQuery = "INSERT INTO user_details (user_id, full_name, birthday, contact_number, email, age, gender, height, weight) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        try (Connection conn = DBConnection.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(insertDetailsQuery)) {
+            
+            stmt.setInt(1, user_id);
+            stmt.setString(2, full_name);
+            stmt.setDate(3, birthday);
+            stmt.setString(4, contact_number);
+            stmt.setString(5, email);
+            stmt.setInt(6, age);
+            stmt.setString(7, gender);
+            stmt.setFloat(8, height);
+            stmt.setFloat(9, weight);
+
+            stmt.executeUpdate();
+            System.out.println("Details added successfully!");
+        }
+    }
+
+    private Date formatDate(String dateStr) {
+        try {
+            SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-yyyy");
+            java.util.Date utilDate = formatter.parse(dateStr);
+            return new Date(utilDate.getTime());
+        } catch (ParseException e) {
+            System.out.println("Invalid date format. Please enter the date in MM-DD-YYYY format.");
+            return null;
+        }
+    }
 
 
     public void editStats(int userId) {
-        // Example edit stats feature placeholder
-        System.out.println("Edit stats feature coming soon for user ID: " + userId);
-        // Additional stat-editing logic to be implemented here
+        System.out.println("Edit stats for user ID: " + userId);
     }
 }
