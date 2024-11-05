@@ -24,3 +24,21 @@ CREATE TABLE user_details (
 ALTER TABLE user_details
 ADD COLUMN gender VARCHAR(15);
 
+CREATE TABLE user_questions (
+                                question_id INT AUTO_INCREMENT PRIMARY KEY,
+                                question_text VARCHAR(255),
+                                question_type ENUM('scale', 'multiple_choice'),
+                                max_scale INT,
+                                choice_options VARCHAR(255)
+);
+
+CREATE TABLE user_answers (
+                              answer_id INT AUTO_INCREMENT PRIMARY KEY,
+                              user_id BIGINT,
+                              question_id INT,
+                              answer INT,
+                              exp_points INT,
+                              FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+                              FOREIGN KEY (question_id) REFERENCES user_questions(question_id) ON DELETE CASCADE
+);
+

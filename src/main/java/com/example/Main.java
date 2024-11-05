@@ -74,7 +74,15 @@ public class Main {
                         String registerUsername = scanner.nextLine();
                         System.out.print("Enter password: ");
                         String registerPassword = scanner.nextLine();
-                        userController.register(registerUsername, registerPassword);
+
+                        Integer newUserId = userController.register(registerUsername, registerPassword);
+
+                        if (newUserId != null) {
+                            System.out.println("Registration successful! Please provide additional information.");
+                            userController.collectAdditionalInfo(newUserId);
+                        } else {
+                            System.out.println("Registration failed.");
+                        }
                         break;
 
                     case 4:
