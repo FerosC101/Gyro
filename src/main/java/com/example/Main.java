@@ -22,7 +22,7 @@ public class Main {
             try {
                 switch (choice) {
                     case 1:
-                        System.out.println("Global Server view feature coming soon!");
+                        System.out.println("Global Server view!");
                         break;
 
                     case 2:
