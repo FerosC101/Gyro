@@ -79,7 +79,7 @@ public class Main {
 
                         if (newUserId != null) {
                             System.out.println("Registration successful! Please provide additional information.");
-                            userController.collectAdditionalInfo(newUserId);
+                            userController.displayAdditionalQuestions(newUserId);
                         } else {
                             System.out.println("Registration failed.");
                         }

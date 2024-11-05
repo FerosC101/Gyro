@@ -232,4 +232,10 @@ public class UserController {
     public void editStats(int userId) {
         System.out.println("Edit stats for user ID: " + userId);
     }
+
+    public void displayAdditionalQuestions(int userId) throws SQLException {
+        System.out.println("Please answer the following questions:");
+        collectAdditionalInfo(userId);
+        collectLifeExperience(userId);
+    }
 }
