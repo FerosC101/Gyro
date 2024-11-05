@@ -188,7 +188,6 @@ public class UserController {
                     System.out.print("Your answer (1-" + maxScale + "): ");
                     answer = scanner.nextInt();
 
-                    // Calculate exp points for scale questions
                     expPoints = calculateScaleExpPoints(answer);
                     System.out.println("You earned " + expPoints + " exp points.");
 
@@ -203,18 +202,15 @@ public class UserController {
                     System.out.println("Answer saved for future use.");
                 }
 
-                // Store user answer and exp (0 exp for multiple-choice)
                 storeUserAnswer(userId, questionId, answer, expPoints);
             }
         }
     }
 
-    // Calculate exp points for scale questions based on 100 for 1, 150 for 2, etc.
     private int calculateScaleExpPoints(int answer) {
         return 100 + (answer - 1) * 50;
     }
 
-    // Store answer in the database
     private void storeUserAnswer(int userId, int questionId, int answer, int expPoints) throws SQLException {
         String insertAnswerQuery = "INSERT INTO user_answers (user_id, question_id, answer, exp_points) VALUES (?, ?, ?, ?)";
 
