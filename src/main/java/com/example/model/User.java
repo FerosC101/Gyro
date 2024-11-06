@@ -4,6 +4,7 @@ import java.util.Date;
 
 public class User {
     private int userId;
+    private int exp;  // Change this from static to instance variable
     private String fullName;
     private Date birthday;
     private String contactNumber;
@@ -23,6 +24,14 @@ public class User {
         this.userId = userId;
     }
 
+    public int getExp() {
+        return exp;
+    }
+
+    public void setExp(int exp) {
+        this.exp = exp;
+    }
+
     public String getFullName() {
         return fullName;
     }
@@ -31,8 +40,8 @@ public class User {
         this.fullName = fullName;
     }
 
-    public Date getBirthday() {
-        return birthday;
+    public java.sql.Date getBirthday() {
+        return (java.sql.Date) birthday;
     }
 
     public void setBirthday(Date birthday) {

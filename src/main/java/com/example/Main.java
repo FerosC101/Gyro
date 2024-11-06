@@ -1,6 +1,7 @@
 package com.example;
 
 import com.example.controller.UserController;
+
 import java.sql.SQLException;
 import java.util.Scanner;
 
@@ -10,7 +11,7 @@ public class Main {
         UserController userController = new UserController();
 
         while (true) {
-            System.out.println("Welcome to WANDAT");
+            System.out.println("Welcome to Gyro");
             System.out.println("[1] View Global Server");
             System.out.println("[2] Login");
             System.out.println("[3] Register");
@@ -35,40 +36,65 @@ public class Main {
 
                         if (userId != null) {
                             System.out.println("Welcome back, " + loginUsername + "!");
-                            System.out.println("[1] Add Achievement");
-                            System.out.println("[2] Edit Stats");
-                            System.out.println("[3] View Routines");
-                            System.out.println("[4] View Account");
-                            System.out.println("[5] Logout");
-                            System.out.print("Choose an option: ");
-                            int loginOption = scanner.nextInt();
-                            scanner.nextLine();
+                            boolean loggedIn = true;
 
-                            if (loginOption == 1) {
-                                System.out.print("Enter category (Local, Personal, National, International): ");
-                                String category = scanner.nextLine();
+                            while (loggedIn) {
+                                System.out.println("[1] Add Achievement");
+                                System.out.println("[2] Edit Stats");
+                                System.out.println("[3] View Routines");
+                                System.out.println("[4] View Account");
+                                System.out.println("[5] Logout");
+                                System.out.print("Choose an option: ");
+                                int loginOption = scanner.nextInt();
+                                scanner.nextLine();
 
-                                System.out.print("Enter achievement name: ");
-                                String achievement = scanner.nextLine();
+                                switch (loginOption) {
+                                    case 1:
+                                        System.out.print("Enter category (Local, Personal, National, International): ");
+                                        String category = scanner.nextLine();
 
-                                System.out.print("Enter description: ");
-                                String description = scanner.nextLine();
+                                        System.out.print("Enter achievement name: ");
+                                        String achievement = scanner.nextLine();
 
-                                System.out.print("Enter date achieved (mm-dd-yyyy): ");
-                                String dateAchieved = scanner.nextLine();
+                                        System.out.print("Enter description: ");
+                                        String description = scanner.nextLine();
 
-                                System.out.print("Enter any additional notes (optional): ");
-                                String notes = scanner.nextLine();
+                                        System.out.print("Enter date achieved (MM-DD-YYYY): ");
+                                        String dateAchieved = scanner.nextLine();
 
-                                userController.addAchievement(userId, achievement, description, category, dateAchieved, notes);
+                                        System.out.print("Enter any additional notes (optional): ");
+                                        String notes = scanner.nextLine();
 
-                            } else if (loginOption == 2) {
-                                userController.editStats(userId);
+                                        userController.addAchievement(userId, achievement, description, category, dateAchieved, notes);
+                                        break;
+
+                                    case 2:
+                                        userController.editStats(userId);
+                                        break;
+
+                                    case 3:
+                                        System.out.println("Viewing routines (feature not yet implemented).");
+                                        break;
+
+                                    case 4:
+                                        System.out.println("Viewing account (feature not yet implemented).");
+                                        break;
+
+                                    case 5:
+                                        System.out.println("Logging out...");
+                                        loggedIn = false;
+                                        break;
+
+                                    default:
+                                        System.out.println("Invalid option. Please try again.");
+                                        break;
+                                }
                             }
                         } else {
                             System.out.println("Login failed. Please try again.");
                         }
                         break;
+
                     case 3:
                         System.out.print("Enter username: ");
                         String registerUsername = scanner.nextLine();
