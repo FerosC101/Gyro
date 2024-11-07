@@ -39,13 +39,14 @@ CREATE TABLE user_questions (
     choice_options VARCHAR(255)
 );
 
-CREATE TABLE user_answers (
-    answer_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id BIGINT,
-    question_id INT,
-    answer INT,
-    exp_points INT,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (question_id) REFERENCES user_questions(question_id) ON DELETE CASCADE
+CREATE TABLE job_experience (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    company_name VARCHAR(255) NOT NULL,
+    job_title VARCHAR(255) NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE,
+    description TEXT,
+    exp_points INT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
-

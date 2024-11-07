@@ -1,7 +1,7 @@
 package com.example.controller;
 
-import com.example.connection.DBConnection;
 import com.example.model.User;
+import com.example.service.CredentialService;
 import com.example.service.UserService;
 
 import java.sql.*;
@@ -14,8 +14,10 @@ import static com.example.connection.DBConnection.getConnection;
 public class UserController {
     private final User user;
     private final UserService userService;
+    private final CredentialService credentialService;
 
     public UserController() {
+        this.credentialService = new CredentialService();
         this.userService = new UserService();
         this.user = new User();
     }
@@ -28,25 +30,12 @@ public class UserController {
         return userService.login(username, password);
     }
 
-    public void addAchievement(int userId, String achievementName, String description, String category, String dateAchieved, String notes) throws SQLException {
-        String insertAchievementQuery = "INSERT INTO credentials (user_id, achievement_name, description, category, date_achieved, notes) VALUES (?, ?, ?, ?, STR_TO_DATE(?, '%m-%d-%Y'), ?)";
-
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(insertAchievementQuery)) {
-
-            stmt.setInt(1, userId);
-            stmt.setString(2, achievementName);
-            stmt.setString(3, description);
-            stmt.setString(4, category);
-            stmt.setString(5, dateAchieved);
-            stmt.setString(6, notes);
-
-            stmt.executeUpdate();
-            System.out.println("Achievement added successfully!");
-        } catch (SQLException e) {
-            System.err.println("Failed to add achievement: " + e.getMessage());
-            throw e;
-        }
+    public void addAchievement(int userId) throws SQLException {
+        credentialService.addAchievement(userId);
+    }
+    
+    public void addJobExperience(int userId) throws SQLException {
+        credentialService.addJobExperience(userId);
     }
 
     public void collectAdditionalInfo(int userId) throws SQLException {
@@ -159,6 +148,33 @@ public class UserController {
 
         updateUserExp(userId, totalExp);
         System.out.println("Thank you for completing the life experience questionnaire. Your responses have been recorded, and your total experience points have been added.");
+
+        boolean choosing = true;
+        while (choosing) {
+            System.out.println("What would you like to do next?");
+            System.out.println("[1] Add Job Experience");
+            System.out.println("[2] Add Achievement");
+            System.out.println("[3] Continue to Log In");
+            System.out.print("Choose an option: ");
+
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (choice) {
+                case 1:
+                    credentialService.addJobExperience(userId);
+                    break;
+                case 2:
+                    addAchievement(userId);
+                    break;
+                case 3:
+                    System.out.println("Continuing to log in...");
+                    choosing = false;
+                    break;
+                default:
+                    System.out.println("Invalid option. Please choose again.");
+            }
+        }
     }
 
     public int getUserExp(int userId) throws SQLException {

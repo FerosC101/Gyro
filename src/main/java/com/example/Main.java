@@ -40,47 +40,31 @@ public class Main {
 
                             while (loggedIn) {
                                 System.out.println("[1] Add Achievement");
-                                System.out.println("[2] Edit Stats");
-                                System.out.println("[3] View Routines");
-                                System.out.println("[4] View Account");
-                                System.out.println("[5] Logout");
+                                System.out.println("[2] Add Job Experience");
+                                System.out.println("[3] Edit Stats");
+                                System.out.println("[4] View Routines");
+                                System.out.println("[5] View Account");
+                                System.out.println("[6] Logout");
                                 System.out.print("Choose an option: ");
                                 int loginOption = scanner.nextInt();
                                 scanner.nextLine();
 
                                 switch (loginOption) {
                                     case 1:
-                                        System.out.print("Enter category (Local, Personal, National, International): ");
-                                        String category = scanner.nextLine();
-
-                                        System.out.print("Enter achievement name: ");
-                                        String achievement = scanner.nextLine();
-
-                                        System.out.print("Enter description: ");
-                                        String description = scanner.nextLine();
-
-                                        System.out.print("Enter date achieved (MM-DD-YYYY): ");
-                                        String dateAchieved = scanner.nextLine();
-
-                                        System.out.print("Enter any additional notes (optional): ");
-                                        String notes = scanner.nextLine();
-
-                                        userController.addAchievement(userId, achievement, description, category, dateAchieved, notes);
+                                        userController.addAchievement(userId);
                                         break;
-
                                     case 2:
-                                        userController.editStats(userId);
+                                        userController.addJobExperience(userId);
                                         break;
-
                                     case 3:
+                                        userController.editStats(userId);
+                                    case 4:
                                         System.out.println("Viewing routines (feature not yet implemented).");
                                         break;
-
-                                    case 4:
+                                    case 5:
                                         System.out.println("Viewing account (feature not yet implemented).");
                                         break;
-
-                                    case 5:
+                                    case 6:
                                         System.out.println("Logging out...");
                                         loggedIn = false;
                                         break;
