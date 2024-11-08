@@ -1,12 +1,14 @@
 package com.example.service;
 
 import com.example.connection.DBConnection;
+import com.example.model.Credential;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Scanner;
 
 import static com.example.connection.DBConnection.getConnection;
@@ -35,17 +37,21 @@ public class CredentialService {
         System.out.print("Enter any additional notes (optional): ");
         String notes = scanner.nextLine();
 
+        Credential achievement = new Credential(0, userId, achievementName, description, category,
+                java.sql.Date.valueOf(Objects.requireNonNull(formatDate(dateAchieved))), notes, 0, null, null,
+                null, null, null);
+
         String insertAchievementQuery = "INSERT INTO credentials (user_id, achievement_name, description, category, date_achieved, notes) VALUES (?, ?, ?, ?, STR_TO_DATE(?, '%m-%d-%Y'), ?)";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(insertAchievementQuery)) {
 
-            stmt.setInt(1, userId);
-            stmt.setString(2, achievementName);
-            stmt.setString(3, description);
-            stmt.setString(4, category);
+            stmt.setInt(1, achievement.getUserId());
+            stmt.setString(2, achievement.getAchievementName());
+            stmt.setString(3, achievement.getDescription());
+            stmt.setString(4, achievement.getCategory());
             stmt.setString(5, dateAchieved);
-            stmt.setString(6, notes);
+            stmt.setString(6, achievement.getNotes());
 
             stmt.executeUpdate();
             System.out.println("Achievement added successfully!");
@@ -56,8 +62,6 @@ public class CredentialService {
     }
 
     public void addJobExperience(int userId) throws SQLException {
-        Scanner scanner = new Scanner(System.in);
-
         System.out.println("Please enter the details of your job experience:");
 
         System.out.print("Enter the company name: ");
@@ -80,18 +84,23 @@ public class CredentialService {
 
         int expPoints = calculateJobExp(jobTitle, startDate, endDate, jobType);
 
-        String insertJobExperienceQuery = "INSERT INTO job_experience (user_id, company_name, job_title, start_date, end_date, description, exp_points) VALUES (?, ?, ?, STR_TO_DATE(?, '%m-%d-%Y'), IF(?, 'Present', STR_TO_DATE(?, '%m-%d-%Y')), ?, ?)";
+        Credential jobExperience = new Credential(0, userId, null, null, null, null,
+                null, 0, companyName, jobTitle,
+                java.sql.Date.valueOf(Objects.requireNonNull(formatDate(startDate))),
+                endDate.equalsIgnoreCase("Present") ? null : java.sql.Date.valueOf(Objects.requireNonNull(formatDate(endDate))),
+                jobDescription);
+
+        String insertJobExperienceQuery = "INSERT INTO job_experience (user_id, company_name, job_title, start_date, end_date, description) VALUES (?, ?, ?, STR_TO_DATE(?, '%m-%d-%Y'), IF(?, 'Present', STR_TO_DATE(?, '%m-%d-%Y')), ?)";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(insertJobExperienceQuery)) {
 
-            stmt.setInt(1, userId);
-            stmt.setString(2, companyName);
-            stmt.setString(3, jobTitle);
+            stmt.setInt(1, jobExperience.getUserId());
+            stmt.setString(2, jobExperience.getCompanyName());
+            stmt.setString(3, jobExperience.getJobTitle());
             stmt.setString(4, startDate);
-            stmt.setString(5, endDate);
-            stmt.setString(6, jobDescription);
-            stmt.setInt(7, expPoints);
+            stmt.setString(5, endDate.equalsIgnoreCase("Present") ? null : endDate);
+            stmt.setString(6, jobExperience.getJobDescription());
 
             stmt.executeUpdate();
             System.out.println("Job experience added successfully!");
@@ -101,7 +110,19 @@ public class CredentialService {
             throw e;
         }
     }
-    // do not ask (hehe)
+
+    private String formatDate(String date) {
+        try {
+            SimpleDateFormat inputFormat = new SimpleDateFormat("MM-dd-yyyy");
+            SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd");
+            Date parsedDate = inputFormat.parse(date);
+            return outputFormat.format(parsedDate);
+        } catch (ParseException e) {
+            System.err.println("Invalid date format.");
+            return null;
+        }
+    }
+
     private int calculateJobExp(String jobTitle, String startDate, String endDate, String jobType) {
         int baseExp = 1000;
 
@@ -121,10 +142,9 @@ public class CredentialService {
             Date end = endDate.equalsIgnoreCase("Present") ? new Date() : sdf.parse(endDate);
 
             long durationInMillis = end.getTime() - start.getTime();
-            long durationInMonths = durationInMillis / (1000L * 60 * 60 * 24 * 30); // do not ask
+            long durationInMonths = durationInMillis / (1000L * 60 * 60 * 24 * 30);
 
-            experiencePoints = (int) (baseExp * jobTypeMultiplier * durationInMonths); // do not ask
-
+            experiencePoints = (int) (baseExp * jobTypeMultiplier * durationInMonths);
             experiencePoints = (int) (experiencePoints * Math.pow(1.05, durationInMonths));
 
         } catch (ParseException e) {

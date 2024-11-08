@@ -4,7 +4,7 @@ import java.util.Date;
 
 public class User {
     private int userId;
-    private int exp;  // Change this from static to instance variable
+    private int exp;
     private String fullName;
     private Date birthday;
     private String contactNumber;
@@ -72,16 +72,16 @@ public class User {
         this.age = age;
     }
 
-    public float getHeight() {
-        return height;
+    public int getHeight() {
+        return (int) height;
     }
 
     public void setHeight(float height) {
         this.height = height;
     }
 
-    public float getWeight() {
-        return weight;
+    public int getWeight() {
+        return (int) weight;
     }
 
     public void setWeight(float weight) {

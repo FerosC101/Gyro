@@ -162,7 +162,7 @@ public class UserController {
 
             switch (choice) {
                 case 1:
-                    credentialService.addJobExperience(userId);
+                    addJobExperience(userId);
                     break;
                 case 2:
                     addAchievement(userId);
