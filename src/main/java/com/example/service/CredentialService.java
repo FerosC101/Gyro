@@ -1,6 +1,7 @@
 package com.example.service;
 
 import com.example.connection.DBConnection;
+import com.example.controller.UserController;
 import com.example.model.Credential;
 import java.sql.Connection;
 import java.sql.Date;
@@ -140,14 +141,14 @@ public class CredentialService {
         }
     }
 
-    private int calculateJobExp(String jobTitle, String startDate, String endDate, String jobType) {
+    private int calculateJobExp(int userId, String jobTitle, String startDate, String endDate, String jobType) {
         int baseExp = 1000;
         double jobTypeMultiplier = 1.0;
 
         if (jobType.equals("internship")) {
-            jobTypeMultiplier = 0.5;
+            jobTypeMultiplier = 0.3;
         } else if (jobType.equals("part-time")) {
-            jobTypeMultiplier = 0.75;
+            jobTypeMultiplier = 0.6;
         }
 
         int experiencePoints = 0;
@@ -163,8 +164,13 @@ public class CredentialService {
             experiencePoints = (int) (baseExp * jobTypeMultiplier * durationInMonths);
             experiencePoints = (int) (experiencePoints * Math.pow(1.05, durationInMonths));
 
+            UserController userController = new UserController();
+            userController.updateUserExp(userId, experiencePoints);
+
         } catch (ParseException e) {
             System.err.println("Invalid date format. Could not calculate experience points.");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
 
         return experiencePoints;
