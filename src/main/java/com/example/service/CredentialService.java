@@ -3,12 +3,12 @@ package com.example.service;
 import com.example.connection.DBConnection;
 import com.example.model.Credential;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Objects;
 import java.util.Scanner;
 
 import static com.example.connection.DBConnection.getConnection;
@@ -37,11 +37,18 @@ public class CredentialService {
         System.out.print("Enter any additional notes (optional): ");
         String notes = scanner.nextLine();
 
+        Date sqlDateAchieved = parseDate(dateAchieved);
+
+        if (sqlDateAchieved == null) {
+            System.err.println("Invalid date format. Achievement not added.");
+            return;
+        }
+
         Credential achievement = new Credential(0, userId, achievementName, description, category,
-                java.sql.Date.valueOf(Objects.requireNonNull(formatDate(dateAchieved))), notes, 0, null, null,
+                sqlDateAchieved, notes, 0, null, null,
                 null, null, null);
 
-        String insertAchievementQuery = "INSERT INTO credentials (user_id, achievement_name, description, category, date_achieved, notes) VALUES (?, ?, ?, ?, STR_TO_DATE(?, '%m-%d-%Y'), ?)";
+        String insertAchievementQuery = "INSERT INTO credentials (user_id, achievement_name, description, category, date_achieved, notes) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(insertAchievementQuery)) {
@@ -50,7 +57,7 @@ public class CredentialService {
             stmt.setString(2, achievement.getAchievementName());
             stmt.setString(3, achievement.getDescription());
             stmt.setString(4, achievement.getCategory());
-            stmt.setString(5, dateAchieved);
+            stmt.setDate(5, sqlDateAchieved);
             stmt.setString(6, achievement.getNotes());
 
             stmt.executeUpdate();
@@ -82,15 +89,18 @@ public class CredentialService {
         System.out.print("Is this an internship, full-time, or part-time job? ");
         String jobType = scanner.nextLine().toLowerCase();
 
-        int expPoints = calculateJobExp(jobTitle, startDate, endDate, jobType);
+        Date sqlStartDate = parseDate(startDate);
+        Date sqlEndDate = endDate.equalsIgnoreCase("Present") ? null : parseDate(endDate);
+
+        if (sqlStartDate == null || (!endDate.equalsIgnoreCase("Present") && sqlEndDate == null)) {
+            System.err.println("Invalid date format. Job experience not added.");
+            return;
+        }
 
         Credential jobExperience = new Credential(0, userId, null, null, null, null,
-                null, 0, companyName, jobTitle,
-                java.sql.Date.valueOf(Objects.requireNonNull(formatDate(startDate))),
-                endDate.equalsIgnoreCase("Present") ? null : java.sql.Date.valueOf(Objects.requireNonNull(formatDate(endDate))),
-                jobDescription);
+                null, 0, companyName, jobTitle, sqlStartDate, sqlEndDate, jobDescription);
 
-        String insertJobExperienceQuery = "INSERT INTO job_experience (user_id, company_name, job_title, start_date, end_date, description) VALUES (?, ?, ?, STR_TO_DATE(?, '%m-%d-%Y'), IF(?, 'Present', STR_TO_DATE(?, '%m-%d-%Y')), ?)";
+        String insertJobExperienceQuery = "INSERT INTO job_experience (user_id, company_name, job_title, start_date, end_date, description) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(insertJobExperienceQuery)) {
@@ -98,8 +108,15 @@ public class CredentialService {
             stmt.setInt(1, jobExperience.getUserId());
             stmt.setString(2, jobExperience.getCompanyName());
             stmt.setString(3, jobExperience.getJobTitle());
-            stmt.setString(4, startDate);
-            stmt.setString(5, endDate.equalsIgnoreCase("Present") ? null : endDate);
+            stmt.setDate(4, sqlStartDate);
+
+            // Set end date to NULL if it's "Present"
+            if (sqlEndDate == null) {
+                stmt.setNull(5, Types.DATE);
+            } else {
+                stmt.setDate(5, sqlEndDate);
+            }
+
             stmt.setString(6, jobExperience.getJobDescription());
 
             stmt.executeUpdate();
@@ -111,21 +128,20 @@ public class CredentialService {
         }
     }
 
-    private String formatDate(String date) {
+    private Date parseDate(String dateStr) {
         try {
-            SimpleDateFormat inputFormat = new SimpleDateFormat("MM-dd-yyyy");
-            SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd");
-            Date parsedDate = inputFormat.parse(date);
-            return outputFormat.format(parsedDate);
+            SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
+            sdf.setLenient(false);
+            java.util.Date parsedDate = sdf.parse(dateStr);
+            return new java.sql.Date(parsedDate.getTime());
         } catch (ParseException e) {
-            System.err.println("Invalid date format.");
+            System.err.println("Invalid date format: " + dateStr);
             return null;
         }
     }
 
     private int calculateJobExp(String jobTitle, String startDate, String endDate, String jobType) {
         int baseExp = 1000;
-
         double jobTypeMultiplier = 1.0;
 
         if (jobType.equals("internship")) {
@@ -138,8 +154,8 @@ public class CredentialService {
 
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
-            Date start = sdf.parse(startDate);
-            Date end = endDate.equalsIgnoreCase("Present") ? new Date() : sdf.parse(endDate);
+            java.util.Date start = sdf.parse(startDate);
+            java.util.Date end = endDate.equalsIgnoreCase("Present") ? new java.util.Date() : sdf.parse(endDate);
 
             long durationInMillis = end.getTime() - start.getTime();
             long durationInMonths = durationInMillis / (1000L * 60 * 60 * 24 * 30);
