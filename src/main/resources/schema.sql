@@ -57,11 +57,11 @@ CREATE TABLE daily_routines (
 );
 
 CREATE TABLE user_daily_routines (
-    user_id BIGINT,
+    user_id BIGINT UNSIGNED,
     routine_id INT,
     date DATE,
     completed BOOLEAN DEFAULT FALSE,
-    PRIMARY KEY (user_id, routine_id),
+    PRIMARY KEY (user_id, routine_id, date),
     FOREIGN KEY (user_id) REFERENCES users(user_id),
     FOREIGN KEY (routine_id) REFERENCES daily_routines(id)
 );

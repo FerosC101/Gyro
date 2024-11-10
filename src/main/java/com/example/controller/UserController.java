@@ -7,6 +7,7 @@ import com.example.service.UserService;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -232,8 +233,14 @@ public class UserController {
 
     public void displayDailyRoutines(int userId) throws SQLException {
         Scanner scanner = new Scanner(System.in);
+        LocalDate today = LocalDate.now();
         boolean completedRoutines = false;
-        List<String> currentRoutines = getRandomRoutines();
+
+        List<String> currentRoutines = getUserAssignedRoutines(userId, today);
+        if (currentRoutines.isEmpty()) {
+            currentRoutines = getRandomRoutines();
+            assignUserRoutines(userId, currentRoutines, today);
+        }
 
         while (!completedRoutines) {
             System.out.println("Here are your daily routines:");
@@ -247,6 +254,7 @@ public class UserController {
             if (answer.equalsIgnoreCase("yes")) {
                 System.out.println("Congratulations on completing your daily routines!");
                 addExpToUser(userId, 150);
+                markRoutinesCompleted(userId, today);
                 completedRoutines = true;
             } else {
                 System.out.println("Please complete all routines to proceed. Returning to main menu.");
@@ -255,7 +263,81 @@ public class UserController {
         }
     }
 
-    // Helper function to retrieve 5 random routines from the database
+    private List<String> getUserAssignedRoutines(int userId, LocalDate date) throws SQLException {
+        List<String> routines = new ArrayList<>();
+        String query = "SELECT dr.routine FROM daily_routines dr " +
+                       "JOIN user_daily_routines udr ON dr.id = udr.routine_id " +
+                       "WHERE udr.user_id = ? AND udr.date = ? AND udr.completed = FALSE";
+
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, userId);
+            pstmt.setDate(2, Date.valueOf(date));
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                routines.add(rs.getString("routine"));
+            }
+        }
+        return routines;
+    }
+
+    private void assignUserRoutines(int userId, List<String> routines, LocalDate date) throws SQLException {
+        if (checkRoutinesExistForToday(userId, date)) {
+            System.out.println("Routines for today are already assigned.");
+            return;
+        }
+
+        String insertSQL = "INSERT INTO user_daily_routines (user_id, routine_id, date, completed) VALUES (?, ?, ?, FALSE)";
+
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(insertSQL)) {
+            for (String routine : routines) {
+                int routineId = getRoutineIdByName(routine);
+                pstmt.setInt(1, userId);
+                pstmt.setInt(2, routineId);
+                pstmt.setDate(3, Date.valueOf(date));
+                pstmt.addBatch();
+            }
+            pstmt.executeBatch();
+        }
+
+    }
+
+    private boolean checkRoutinesExistForToday(int userId, LocalDate date) throws SQLException {
+        String query = "SELECT 1 FROM user_daily_routines WHERE user_id = ? AND date = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, userId);
+            pstmt.setDate(2, Date.valueOf(date));
+            ResultSet rs = pstmt.executeQuery();
+            return rs.next();
+        }
+    }
+
+    private int getRoutineIdByName(String routineName) throws SQLException {
+        String query = "SELECT id FROM daily_routines WHERE routine = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setString(1, routineName);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("id");
+            }
+        }
+        throw new SQLException("Routine not found: " + routineName);
+    }
+
+    private void markRoutinesCompleted(int userId, LocalDate date) throws SQLException {
+        String updateSQL = "UPDATE user_daily_routines SET completed = TRUE WHERE user_id = ? AND date = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(updateSQL)) {
+            pstmt.setInt(1, userId);
+            pstmt.setDate(2, Date.valueOf(date));
+            pstmt.executeUpdate();
+        }
+    }
+
     private List<String> getRandomRoutines() throws SQLException {
         List<String> routines = new ArrayList<>();
         String query = "SELECT routine FROM daily_routines ORDER BY RAND() LIMIT 5";
