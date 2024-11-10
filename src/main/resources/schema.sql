@@ -50,3 +50,18 @@ CREATE TABLE job_experience (
     exp_points INT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
+
+CREATE TABLE daily_routines (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    routine VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE user_daily_routines (
+    user_id BIGINT,
+    routine_id INT,
+    date DATE,
+    completed BOOLEAN DEFAULT FALSE,
+    PRIMARY KEY (user_id, routine_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (routine_id) REFERENCES daily_routines(id)
+);

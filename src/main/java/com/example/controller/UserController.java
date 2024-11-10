@@ -7,6 +7,8 @@ import com.example.service.UserService;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 import static com.example.connection.DBConnection.getConnection;
@@ -33,9 +35,41 @@ public class UserController {
     public void addAchievement(int userId) throws SQLException {
         credentialService.addAchievement(userId);
     }
-    
+
     public void addJobExperience(int userId) throws SQLException {
         credentialService.addJobExperience(userId);
+    }
+
+    public void addExpToUser(int userId, int exp) throws SQLException {
+        int currentExp = getUserExp(userId);
+        int newExp = currentExp + exp;
+        user.setExp(newExp);
+
+        String updateExpSQL = "UPDATE users SET exp = ? WHERE user_id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(updateExpSQL)) {
+            pstmt.setInt(1, newExp);
+            pstmt.setInt(2, userId);
+            pstmt.executeUpdate();
+        }
+
+        System.out.println("EXP successfully updated by " + exp + ". New total: " + newExp);
+    }
+
+    public int getUserExp(int userId) throws SQLException {
+        String query = "SELECT exp FROM users WHERE user_id = ?";
+        int exp = 0;
+
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, userId);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                exp = rs.getInt("exp");
+            }
+        }
+        return exp;
     }
 
     public void collectAdditionalInfo(int userId) throws SQLException {
@@ -146,7 +180,7 @@ public class UserController {
         int creativity = scanner.nextInt();
         totalExp += creativity * 50 + 50;
 
-        updateUserExp(userId, totalExp);
+        addExpToUser(userId, totalExp);
         System.out.println("Thank you for completing the life experience questionnaire. Your responses have been recorded, and your total experience points have been added.");
 
         boolean choosing = true;
@@ -177,23 +211,6 @@ public class UserController {
         }
     }
 
-    public int getUserExp(int userId) throws SQLException {
-        String query = "SELECT exp FROM users WHERE user_id = ?";
-        int exp = 0;
-
-        try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-            pstmt.setInt(1, userId);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                exp = rs.getInt("exp");
-            }
-        }
-        user.setExp(exp);
-        return exp;
-    }
-
     public void updateUserExp(int userId, int additionalExp) throws SQLException {
         int newExp = user.getExp() + additionalExp;
         user.setExp(newExp);
@@ -213,7 +230,45 @@ public class UserController {
         collectLifeExperience(userId);
     }
 
-    public void editStats(int userId) {
-        System.out.println("Edit stats for user ID: " + userId);
+    public void displayDailyRoutines(int userId) throws SQLException {
+        Scanner scanner = new Scanner(System.in);
+        boolean completedRoutines = false;
+        List<String> currentRoutines = getRandomRoutines();
+
+        while (!completedRoutines) {
+            System.out.println("Here are your daily routines:");
+            for (int i = 0; i < currentRoutines.size(); i++) {
+                System.out.println((i + 1) + ". " + currentRoutines.get(i));
+            }
+
+            System.out.print("Have you completed all routines? (yes/no): ");
+            String answer = scanner.nextLine();
+
+            if (answer.equalsIgnoreCase("yes")) {
+                System.out.println("Congratulations on completing your daily routines!");
+                addExpToUser(userId, 150);
+                completedRoutines = true;
+            } else {
+                System.out.println("Please complete all routines to proceed. Returning to main menu.");
+                break;
+            }
+        }
     }
+
+    // Helper function to retrieve 5 random routines from the database
+    private List<String> getRandomRoutines() throws SQLException {
+        List<String> routines = new ArrayList<>();
+        String query = "SELECT routine FROM daily_routines ORDER BY RAND() LIMIT 5";
+
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                routines.add(rs.getString("routine"));
+            }
+        }
+        return routines;
+    }
+
 }
+    

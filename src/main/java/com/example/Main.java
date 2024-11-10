@@ -41,7 +41,7 @@ public class Main {
                             while (loggedIn) {
                                 System.out.println("[1] Add Achievement");
                                 System.out.println("[2] Add Job Experience");
-                                System.out.println("[3] Edit Stats");
+                                System.out.println("[3] Edit Information");
                                 System.out.println("[4] View Routines");
                                 System.out.println("[5] View Account");
                                 System.out.println("[6] Logout");
@@ -57,9 +57,9 @@ public class Main {
                                         userController.addJobExperience(userId);
                                         break;
                                     case 3:
-                                        userController.editStats(userId);
+                                        System.out.println("Edit INFORMATION WILL BE ADDED SOON");
                                     case 4:
-                                        System.out.println("Viewing routines (feature not yet implemented).");
+                                        userController.displayDailyRoutines(userId);
                                         break;
                                     case 5:
                                         System.out.println("Viewing account (feature not yet implemented).");
