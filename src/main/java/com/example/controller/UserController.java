@@ -73,6 +73,21 @@ public class UserController {
         return exp;
     }
 
+    public int calculateAgeExp(User user) {
+        LocalDate today = LocalDate.now();
+        LocalDate birthday = user.getBirthday().toLocalDate();
+
+        int age = user.getAge();
+        if (today.getMonth() == birthday.getMonth() && today.getDayOfMonth() == birthday.getDayOfMonth()) {
+            age += 1;
+        }
+
+        int ageExp = age * 1000;
+        user.setExp(user.getExp() + ageExp);
+
+        return ageExp;
+    }
+
     public void collectAdditionalInfo(int userId) throws SQLException {
         Scanner scanner = new Scanner(System.in);
 
@@ -237,29 +252,44 @@ public class UserController {
         boolean completedRoutines = false;
 
         List<String> currentRoutines = getUserAssignedRoutines(userId, today);
-        if (currentRoutines.isEmpty()) {
+        if (currentRoutines.isEmpty() && checkIfRoutinesCompletedForToday(userId, today)) {
             currentRoutines = getRandomRoutines();
             assignUserRoutines(userId, currentRoutines, today);
         }
 
-        while (!completedRoutines) {
-            System.out.println("Here are your daily routines:");
-            for (int i = 0; i < currentRoutines.size(); i++) {
-                System.out.println((i + 1) + ". " + currentRoutines.get(i));
-            }
+        if (checkIfRoutinesCompletedForToday(userId, today)) {
+            while (!completedRoutines) {
+                System.out.println("Here are your daily routines:");
+                for (int i = 0; i < currentRoutines.size(); i++) {
+                    System.out.println((i + 1) + ". " + currentRoutines.get(i));
+                }
 
-            System.out.print("Have you completed all routines? (yes/no): ");
-            String answer = scanner.nextLine();
+                System.out.print("Have you completed all routines? (yes/no): ");
+                String answer = scanner.nextLine();
 
-            if (answer.equalsIgnoreCase("yes")) {
-                System.out.println("Congratulations on completing your daily routines!");
-                addExpToUser(userId, 150);
-                markRoutinesCompleted(userId, today);
-                completedRoutines = true;
-            } else {
-                System.out.println("Please complete all routines to proceed. Returning to main menu.");
-                break;
+                if (answer.equalsIgnoreCase("yes")) {
+                    System.out.println("Congratulations on completing your daily routines!");
+                    addExpToUser(userId, 150);
+                    markRoutinesCompleted(userId, today);
+                    completedRoutines = true;
+                } else {
+                    System.out.println("Please complete all routines to proceed.");
+                    break;
+                }
             }
+        } else {
+            System.out.println("You have already completed your routines for today.");
+        }
+    }
+
+    private boolean checkIfRoutinesCompletedForToday(int userId, LocalDate date) throws SQLException {
+        String query = "SELECT completed FROM user_daily_routines WHERE user_id = ? AND date = ? AND completed = TRUE";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, userId);
+            pstmt.setDate(2, Date.valueOf(date));
+            ResultSet rs = pstmt.executeQuery();
+            return !rs.next();
         }
     }
 
