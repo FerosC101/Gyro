@@ -1,5 +1,6 @@
 package com.example.controller;
 
+import com.example.connection.UserDAO;
 import com.example.model.User;
 import com.example.service.CredentialService;
 import com.example.service.UserService;
@@ -18,8 +19,10 @@ public class UserController {
     private final User user;
     private final UserService userService;
     private final CredentialService credentialService;
+    private final UserDAO userDAO;
 
     public UserController() {
+        this.userDAO = new UserDAO();
         this.credentialService = new CredentialService();
         this.userService = new UserService();
         this.user = new User();
@@ -294,6 +297,28 @@ public class UserController {
             }
         }
     }
+
+    public void viewAccount(int userId) {
+        try {
+            User user = userDAO.getUserById(userId); // Fetch user by ID
+            if (user != null) {
+                System.out.println("=========== Account Information ===========");
+                System.out.printf("%-15s: %s%n", "Full Name", user.getFullName());
+                System.out.printf("%-15s: %s%n", "Contact Number", user.getContactNumber());
+                System.out.printf("%-15s: %s%n", "Email", user.getEmail());
+                System.out.printf("%-15s: %d%n", "Age", user.getAge());
+                System.out.printf("%-15s: %.1f cm%n", "Height", user.getHeight());
+                System.out.printf("%-15s: %.1f kg%n", "Weight", user.getWeight());
+                System.out.printf("%-15s: %s%n", "Profession", user.getProfession());
+                System.out.println("===========================================");
+            } else {
+                System.out.println("User not found.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error retrieving account information: " + e.getMessage());
+        }
+    }
+
 
     public void updateUserExp(int userId, int additionalExp) throws SQLException {
         int newExp = user.getExp() + additionalExp;

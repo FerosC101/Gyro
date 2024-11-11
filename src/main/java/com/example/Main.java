@@ -62,7 +62,7 @@ public class Main {
                                         userController.displayDailyRoutines(userId);
                                         break;
                                     case 5:
-                                        System.out.println("Viewing account (feature not yet implemented).");
+                                        userController.viewAccount(userId);
                                         break;
                                     case 6:
                                         System.out.println("Logging out...");

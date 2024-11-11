@@ -46,20 +46,17 @@ public class UserDAO {
     }
 
     public void updateUser(User user) throws SQLException {
-        String updateQuery = "UPDATE user_details SET full_name = ?, birthday = ?, contact_number = ?, email = ?, age = ?, height = ?, weight = ?,  gender = ?, profession = ? WHERE user_id = ?";
+        String updateQuery = "UPDATE users SET contact_number = ?, email = ?, height = ?, weight = ?, profession = ? WHERE user_id = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(updateQuery)) {
 
-            stmt.setString(1, user.getFullName());
-            stmt.setDate(2, user.getBirthday());
-            stmt.setString(3, user.getContactNumber());
-            stmt.setString(4, user.getEmail());
-            stmt.setInt(5, user.getAge());
-            stmt.setInt(6, user.getHeight());
-            stmt.setInt(7, user.getWeight());
-            stmt.setString(8, user.getGender());
-            stmt.setInt(9, user.getUserId());
+            stmt.setString(1, user.getContactNumber());
+            stmt.setString(2, user.getEmail());
+            stmt.setInt(3, user.getHeight());
+            stmt.setInt(4, user.getWeight());
+            stmt.setString(5, user.getProfession());
+            stmt.setInt(6, user.getUserId());
 
             stmt.executeUpdate();
             System.out.println("User updated successfully!");
@@ -68,6 +65,7 @@ public class UserDAO {
             throw e;
         }
     }
+
 
     private User mapResultSetToUser(ResultSet rs) throws SQLException {
         User user = new User();
