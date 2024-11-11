@@ -111,7 +111,6 @@ public class CredentialService {
             stmt.setString(3, jobExperience.getJobTitle());
             stmt.setDate(4, sqlStartDate);
 
-            // Set end date to NULL if it's "Present"
             if (sqlEndDate == null) {
                 stmt.setNull(5, Types.DATE);
             } else {

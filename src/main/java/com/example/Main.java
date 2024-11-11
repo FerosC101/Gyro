@@ -57,7 +57,7 @@ public class Main {
                                         userController.addJobExperience(userId);
                                         break;
                                     case 3:
-                                        System.out.println("Edit INFORMATION WILL BE ADDED SOON");
+                                        userController.editUserInfo(userId);
                                     case 4:
                                         userController.displayDailyRoutines(userId);
                                         break;

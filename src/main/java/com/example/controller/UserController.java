@@ -127,6 +127,10 @@ public class UserController {
         System.out.print("Enter your profession: ");
         user.setProfession(scanner.nextLine());
 
+        int ageExp = calculateAgeExp(user);
+        addExpToUser(userId, ageExp);
+        System.out.println("Age-based EXP of " + ageExp + " has been added to your account.");
+
         String insertDetailsSQL = "INSERT INTO user_details (user_id, full_name, birthday, contact_number, email, age, height, weight, gender, profession) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = getConnection();
@@ -148,6 +152,70 @@ public class UserController {
                 System.out.println("Additional information collected and saved successfully!");
             } else {
                 System.out.println("Failed to save additional information.");
+            }
+        }
+    }
+
+    public void editUserInfo(int userId) throws SQLException {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Edit your information. Leave the field empty if you do not wish to change it.");
+
+        System.out.print("Enter new contact number (leave blank to keep current): ");
+        String contactNumber = scanner.nextLine();
+        if (contactNumber.isEmpty()) {
+            contactNumber = getUserField(userId, "contact_number");
+        }
+
+        System.out.print("Enter new email (leave blank to keep current): ");
+        String email = scanner.nextLine();
+        if (email.isEmpty()) {
+            email = getUserField(userId, "email");
+        }
+
+        System.out.print("Enter new height (leave blank to keep current): ");
+        String heightInput = scanner.nextLine();
+        float height = heightInput.isEmpty() ? Float.parseFloat(getUserField(userId, "height")) : Float.parseFloat(heightInput);
+
+        System.out.print("Enter new weight (leave blank to keep current): ");
+        String weightInput = scanner.nextLine();
+        float weight = weightInput.isEmpty() ? Float.parseFloat(getUserField(userId, "weight")) : Float.parseFloat(weightInput);
+
+        System.out.print("Enter new profession (leave blank to keep current): ");
+        String profession = scanner.nextLine();
+        if (profession.isEmpty()) {
+            profession = getUserField(userId, "profession");
+        }
+
+        String updateSQL = "UPDATE user_details SET contact_number = ?, email = ?, height = ?, weight = ?, profession = ? WHERE user_id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(updateSQL)) {
+            pstmt.setString(1, contactNumber);
+            pstmt.setString(2, email);
+            pstmt.setFloat(3, height);
+            pstmt.setFloat(4, weight);
+            pstmt.setString(5, profession);
+            pstmt.setInt(6, userId);
+
+            int rowsUpdated = pstmt.executeUpdate();
+            if (rowsUpdated > 0) {
+                System.out.println("Your information has been updated successfully.");
+            } else {
+                System.out.println("Failed to update your information.");
+            }
+        }
+    }
+
+    private String getUserField(int userId, String fieldName) throws SQLException {
+        String query = "SELECT " + fieldName + " FROM user_details WHERE user_id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, userId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getString(fieldName);
+            } else {
+                throw new SQLException("User not found.");
             }
         }
     }
