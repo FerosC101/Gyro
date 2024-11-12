@@ -45,9 +45,7 @@ public class CredentialService {
             return;
         }
 
-        Credential achievement = new Credential(0, userId, achievementName, description, category,
-                sqlDateAchieved, notes, 0, null, null,
-                null, null, null);
+        Credential achievement = new Credential();
 
         String insertAchievementQuery = "INSERT INTO credentials (user_id, achievement_name, description, category, date_achieved, notes) VALUES (?, ?, ?, ?, ?, ?)";
 
@@ -98,8 +96,7 @@ public class CredentialService {
             return;
         }
 
-        Credential jobExperience = new Credential(0, userId, null, null, null, null,
-                null, 0, companyName, jobTitle, sqlStartDate, sqlEndDate, jobDescription);
+        Credential jobExperience = new Credential();
 
         String insertJobExperienceQuery = "INSERT INTO job_experience (user_id, company_name, job_title, start_date, end_date, description) VALUES (?, ?, ?, ?, ?, ?)";
 

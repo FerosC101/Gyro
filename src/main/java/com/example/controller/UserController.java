@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import com.example.connection.UserDAO;
+import com.example.model.Credential;
 import com.example.model.User;
 import com.example.service.CredentialService;
 import com.example.service.UserService;
@@ -20,8 +21,10 @@ public class UserController {
     private final UserService userService;
     private final CredentialService credentialService;
     private final UserDAO userDAO;
+    private final Credential credential;
 
     public UserController() {
+        this.credential = new Credential();
         this.userDAO = new UserDAO();
         this.credentialService = new CredentialService();
         this.userService = new UserService();
@@ -298,25 +301,74 @@ public class UserController {
         }
     }
 
-    public void viewAccount(int userId) {
+    public <Achievement, Experience> void viewAccount(int loggedInUserId) {
         try {
-            User user = userDAO.getUserById(userId); // Fetch user by ID
-            if (user != null) {
-                System.out.println("=========== Account Information ===========");
-                System.out.printf("%-15s: %s%n", "Full Name", user.getFullName());
-                System.out.printf("%-15s: %s%n", "Contact Number", user.getContactNumber());
-                System.out.printf("%-15s: %s%n", "Email", user.getEmail());
-                System.out.printf("%-15s: %d%n", "Age", user.getAge());
-                System.out.printf("%-15s: %.1f cm%n", "Height", user.getHeight());
-                System.out.printf("%-15s: %.1f kg%n", "Weight", user.getWeight());
-                System.out.printf("%-15s: %s%n", "Profession", user.getProfession());
-                System.out.println("===========================================");
+            User user = userDAO.getUserById(loggedInUserId);
+            int level = calculateLevel(user.getExp());
+
+            System.out.println("\n--- Account Details ---\n");
+            System.out.printf("Full Name   : %s\n", user.getFullName());
+            System.out.printf("Level       : %d\n", level);
+            System.out.printf("Profession  : %s\n\n", user.getProfession());
+
+            System.out.println("----- Other Details -----");
+            System.out.printf("Email           : %s\n", user.getEmail());
+            System.out.printf("Contact Number  : %s\n", user.getContactNumber());
+            System.out.printf("Birthday        : %s\n", user.getBirthday());
+            System.out.printf("Height          : %d cm\n", user.getHeight());
+            System.out.printf("Weight          : %d kg\n", user.getWeight());
+            System.out.println();
+
+            System.out.println("Experience:");
+            List<Experience> experiences = (List<Experience>) userDAO.getUserById(loggedInUserId);
+            if (experiences.isEmpty()) {
+                System.out.println("  No experience records found.");
             } else {
-                System.out.println("User not found.");
+                for (Experience exp : experiences) {
+                    System.out.println("  Title         : " + credential.getCompanyName());
+                    System.out.println("  Position/Role : " + credential.getJobTitle());
+                    System.out.println("  Date          : " + credential.getStartDate() + " - " + credential.getEndDate());
+                    System.out.println("  Description   : " + credential.getJobDescription());
+                    System.out.println("  ---------------------");
+                }
             }
+
+            System.out.println("Achievements:");
+            List<Achievement> achievements = (List<Achievement>) userDAO.getUserById(loggedInUserId);
+            if (achievements.isEmpty()) {
+                System.out.println("  No achievements found.");
+            } else {
+                for (Achievement ach : achievements) {
+                    System.out.println("  Name         : " + credential.getAchievementName());
+                    System.out.println("  Category     : " + credential.getCategory());
+                    System.out.println("  Date         : " + credential.getDateAchieved());
+                    System.out.println("  Description  : " + credential.getDescription());
+
+                    if (credential.getNotes() != null && !credential.getNotes().isEmpty()) {
+                        System.out.println("  Note         : " + credential.getNotes());
+                    }
+                    System.out.println("  ---------------------");
+                }
+            }
+            System.out.println("=========================================");
+
         } catch (SQLException e) {
-            System.out.println("Error retrieving account information: " + e.getMessage());
+            System.err.println("Error retrieving account information: " + e.getMessage());
         }
+    }
+
+
+    public int calculateLevel(int exp) {
+        int level = 0;
+        int requiredExp = 1000;
+
+        while (exp >= requiredExp) {
+            exp -= requiredExp;
+            level++;
+            requiredExp += 250;
+        }
+
+        return level;
     }
 
 

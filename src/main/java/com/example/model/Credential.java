@@ -20,28 +20,6 @@ public class Credential {
     private Date endDate;
     private String jobDescription;
 
-    public Credential(int credentialId, long userId, String achievementName, String description,
-                      String category, Date dateAchieved, String notes,
-                      int jobExperienceId, String companyName, String jobTitle,
-                      Date startDate, Date endDate, String jobDescription) {
-        // Achievement fields
-        this.credentialId = credentialId;
-        this.userId = userId;
-        this.achievementName = achievementName;
-        this.description = description;
-        this.category = category;
-        this.dateAchieved = dateAchieved;
-        this.notes = notes;
-
-        // Job experience fields
-        this.jobExperienceId = jobExperienceId;
-        this.companyName = companyName;
-        this.jobTitle = jobTitle;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.jobDescription = jobDescription;
-    }
-
     // Getters and Setters for Achievement fields
     public int getCredentialId() {
         return credentialId;

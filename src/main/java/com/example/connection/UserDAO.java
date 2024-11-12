@@ -70,12 +70,15 @@ public class UserDAO {
     private User mapResultSetToUser(ResultSet rs) throws SQLException {
         User user = new User();
         user.setUserId(rs.getInt("user_id"));
-        user.setEmail(rs.getString("email"));
         user.setFullName(rs.getString("full_name"));
+        user.setBirthday(rs.getDate("birthday"));
+        user.setContactNumber(rs.getString("contact_number"));
+        user.setEmail(rs.getString("email"));
         user.setAge(rs.getInt("age"));
         user.setHeight(rs.getInt("height"));
         user.setWeight(rs.getInt("weight"));
-        user.setBirthday(rs.getDate("birthdate"));
+        user.setGender(rs.getString("gender"));
+        user.setProfession(rs.getString("profession"));
         return user;
     }
 }
