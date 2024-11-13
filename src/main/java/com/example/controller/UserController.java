@@ -47,6 +47,103 @@ public class UserController {
         credentialService.addJobExperience(userId);
     }
 
+    public void viewGlobalServer() throws SQLException {
+        Scanner scanner = new Scanner(System.in);
+        int offset = 0;
+        final int limit = 5;
+        boolean continueViewing = true;
+
+        while (continueViewing) {
+            try (Connection conn = getConnection()) {
+                String userQuery = "SELECT u.user_id, ud.full_name, u.exp, ud.profession " +
+                        "FROM users u " +
+                        "JOIN user_details ud ON u.user_id = ud.user_id " +
+                        "LIMIT ? OFFSET ?";
+                try (PreparedStatement stmt = conn.prepareStatement(userQuery)) {
+                    stmt.setInt(1, limit);
+                    stmt.setInt(2, offset);
+                    ResultSet rs = stmt.executeQuery();
+
+                    System.out.println("\n========== Global Server Users ==========");
+                    int count = 0;
+                    while (rs.next()) {
+                        count++;
+                        int userId = rs.getInt("user_id");
+                        String fullName = rs.getString("full_name");
+                        int exp = rs.getInt("exp");
+                        String profession = rs.getString("profession");
+                        int level = calculateLevel(exp);
+
+                        System.out.println("User ID     : " + userId);
+                        System.out.println("Full Name   : " + fullName);
+                        System.out.println("Level       : " + level);
+                        System.out.println("Profession  : " + profession);
+                        System.out.println("-------------------------------");
+                    }
+
+                    if (count == 0) {
+                        System.out.println("No users found.");
+                    }
+                }
+            }
+
+            // Display navigation options
+            System.out.println("========== Options ==========");
+            System.out.println("[1] Next 5 Users");
+            System.out.println("[2] Previous 5 Users");
+            System.out.println("[3] Search User by Full Name");
+            System.out.println("[4] Back to Main Menu");
+            System.out.print("Enter choice: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (choice) {
+                case 1:
+                    offset += limit;
+                    break;
+                case 2:
+                    if (offset >= limit) {
+                        offset -= limit;
+                    } else {
+                        System.out.println("You're already at the beginning of the list.");
+                    }
+                    break;
+                case 3:
+                    System.out.print("Enter full name to search: ");
+                    String fullNameSearch = scanner.nextLine();
+                    searchUserByFullName(fullNameSearch);
+                    break;
+                case 4:
+                    continueViewing = false;
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    public void searchUserByFullName(String fullName) throws SQLException {
+        try (Connection conn = getConnection()) {
+            String query = "SELECT u.user_id, ud.full_name, u.exp, ud.profession " +
+                    "FROM users u " +
+                    "JOIN user_details ud ON u.user_id = ud.user_id " +
+                    "WHERE ud.full_name = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setString(1, fullName);
+                ResultSet rs = stmt.executeQuery();
+
+                if (rs.next()) {
+                    int userId = rs.getInt("user_id");
+                    System.out.println("\nUser found! Displaying full information...");
+                    viewAccount(userId); // Call the viewAccount method to display full user info
+                } else {
+                    System.out.println("User not found.");
+                }
+            }
+        }
+    }
+
+
     public void addExpToUser(int userId, int exp) throws SQLException {
         int currentExp = getUserExp(userId);
         int newExp = currentExp + exp;

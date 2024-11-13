@@ -23,7 +23,7 @@ public class Main {
             try {
                 switch (choice) {
                     case 1:
-                        System.out.println("Global Server view!");
+                        userController.viewGlobalServer();
                         break;
 
                     case 2:
