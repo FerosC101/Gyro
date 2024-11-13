@@ -1,6 +1,5 @@
 package com.example.service;
 
-import com.example.connection.DBConnection;
 import com.example.controller.UserController;
 import com.example.model.Credential;
 import java.sql.Connection;
@@ -23,20 +22,23 @@ public class CredentialService {
     }
 
     public void addAchievement(int userId) throws SQLException {
-        System.out.print("Enter category (Local, Personal, National, International): ");
-        String category = scanner.nextLine();
+        System.out.println("==== Add a New Achievement ====");
+        System.out.println("Please provide the details of the achievement.");
 
-        System.out.print("Enter achievement name: ");
-        String achievementName = scanner.nextLine();
+        System.out.print("\nCategory (Local, Personal, National, International): ");
+        String category = scanner.nextLine().trim();
 
-        System.out.print("Enter description: ");
-        String description = scanner.nextLine();
+        System.out.print("\nAchievement Name: ");
+        String achievementName = scanner.nextLine().trim();
 
-        System.out.print("Enter date achieved (MM-DD-YYYY): ");
-        String dateAchieved = scanner.nextLine();
+        System.out.print("\nDescription: ");
+        String description = scanner.nextLine().trim();
 
-        System.out.print("Enter any additional notes (optional): ");
-        String notes = scanner.nextLine();
+        System.out.print("\nDate Achieved (MM-DD-YYYY): ");
+        String dateAchieved = scanner.nextLine().trim();
+
+        System.out.print("\nAdditional Notes (optional): ");
+        String notes = scanner.nextLine().trim();
 
         Date sqlDateAchieved = parseDate(dateAchieved);
 
@@ -46,6 +48,12 @@ public class CredentialService {
         }
 
         Credential achievement = new Credential();
+        achievement.setUserId(userId);
+        achievement.setAchievementName(achievementName);
+        achievement.setDescription(description);
+        achievement.setCategory(category);
+        achievement.setDateAchieved(sqlDateAchieved);
+        achievement.setNotes(notes);
 
         String insertAchievementQuery = "INSERT INTO credentials (user_id, achievement_name, description, category, date_achieved, notes) VALUES (?, ?, ?, ?, ?, ?)";
 
@@ -60,33 +68,62 @@ public class CredentialService {
             stmt.setString(6, achievement.getNotes());
 
             stmt.executeUpdate();
-            System.out.println("Achievement added successfully!");
+
+            int experiencePoints = calculateAchievementExp(category);
+
+            UserController userController = new UserController();
+            userController.updateUserExp(userId, experiencePoints);
+
+            System.out.println("\n==== Achievement Added Successfully! ====");
         } catch (SQLException e) {
-            System.err.println("Failed to add achievement: " + e.getMessage());
+            System.err.println("\nFailed to add achievement: " + e.getMessage());
             throw e;
         }
     }
 
+    private int calculateAchievementExp(String category) {
+        int expPoints = 0;
+        switch (category.toLowerCase()) {
+            case "personal":
+                expPoints = 1000;
+                break;
+            case "local":
+                expPoints = 5000;
+                break;
+            case "national":
+                expPoints = 20000;
+                break;
+            case "international":
+                expPoints = 50000;
+                break;
+            default:
+                System.err.println("Invalid category. No experience points awarded.");
+        }
+        return expPoints;
+    }
+
+
     public void addJobExperience(int userId) throws SQLException {
-        System.out.println("Please enter the details of your job experience:");
+        System.out.println("==== Add Job Experience ====");
+        System.out.println("Please enter the details of your job experience below.");
 
-        System.out.print("Enter the company name: ");
-        String companyName = scanner.nextLine();
+        System.out.print("\nCompany Name: ");
+        String companyName = scanner.nextLine().trim();
 
-        System.out.print("Enter the job title/role: ");
-        String jobTitle = scanner.nextLine();
+        System.out.print("\nJob Title/Role: ");
+        String jobTitle = scanner.nextLine().trim();
 
-        System.out.print("Enter the date started (MM-DD-YYYY): ");
-        String startDate = scanner.nextLine();
+        System.out.print("\nStart Date (MM-DD-YYYY): ");
+        String startDate = scanner.nextLine().trim();
 
-        System.out.print("Enter the date ended (MM-DD-YYYY or 'Present' if ongoing): ");
-        String endDate = scanner.nextLine();
+        System.out.print("\nEnd Date (MM-DD-YYYY or 'Present' if ongoing): ");
+        String endDate = scanner.nextLine().trim();
 
-        System.out.print("Enter the job description: ");
-        String jobDescription = scanner.nextLine();
+        System.out.print("\nJob Description: ");
+        String jobDescription = scanner.nextLine().trim();
 
-        System.out.print("Is this an internship, full-time, or part-time job? ");
-        String jobType = scanner.nextLine().toLowerCase();
+        System.out.print("\nJob Type (Internship, Full-time, or Part-time): ");
+        String jobType = scanner.nextLine().trim().toLowerCase();
 
         Date sqlStartDate = parseDate(startDate);
         Date sqlEndDate = endDate.equalsIgnoreCase("Present") ? null : parseDate(endDate);
@@ -125,10 +162,14 @@ public class CredentialService {
             stmt.setString(7, jobExperience.getJobType());
 
             stmt.executeUpdate();
-            System.out.println("Job experience added successfully!");
 
+            calculateJobExp(userId, jobTitle, sqlStartDate, sqlEndDate, jobType);
+
+            System.out.println("\n==== Job Experience Added Successfully! ====");
+            System.out.println("Job Experience at " + companyName + " (" + jobTitle + ") has been added.");
+            System.out.println("Duration: " + startDate + " to " + (endDate.equalsIgnoreCase("Present") ? "Present" : endDate + "\n"));
         } catch (SQLException e) {
-            System.err.println("Failed to add job experience: " + e.getMessage());
+            System.err.println("\nFailed to add job experience: " + e.getMessage());
             throw e;
         }
     }
@@ -146,38 +187,34 @@ public class CredentialService {
         }
     }
 
-    private int calculateJobExp(int userId, String jobTitle, String startDate, String endDate, String jobType) {
+    private void calculateJobExp(int userId, String jobTitle, Date sqlStartDate, Date sqlEndDate, String jobType) {
         int baseExp = 1000;
         double jobTypeMultiplier = 1.0;
 
-        if (jobType.equals("internship")) {
+        if (jobType.equalsIgnoreCase("internship")) {
             jobTypeMultiplier = 0.3;
-        } else if (jobType.equals("part-time")) {
+        } else if (jobType.equalsIgnoreCase("part-time")) {
             jobTypeMultiplier = 0.6;
         }
 
         int experiencePoints = 0;
 
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
-            java.util.Date start = sdf.parse(startDate);
-            java.util.Date end = endDate.equalsIgnoreCase("Present") ? new java.util.Date() : sdf.parse(endDate);
-
-            long durationInMillis = end.getTime() - start.getTime();
-            long durationInMonths = durationInMillis / (1000L * 60 * 60 * 24 * 30);
-
-            experiencePoints = (int) (baseExp * jobTypeMultiplier * durationInMonths);
-            experiencePoints = (int) (experiencePoints * Math.pow(1.05, durationInMonths));
-
-            UserController userController = new UserController();
-            userController.updateUserExp(userId, experiencePoints);
-
-        } catch (ParseException e) {
-            System.err.println("Invalid date format. Could not calculate experience points.");
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        long durationInMonths;
+        if (sqlEndDate == null) {
+            sqlEndDate = new java.sql.Date(new java.util.Date().getTime()); // Use current date if "Present"
         }
 
-        return experiencePoints;
+        durationInMonths = (sqlEndDate.getTime() - sqlStartDate.getTime()) / (1000L * 60 * 60 * 24 * 30);
+
+        experiencePoints = (int) (baseExp * jobTypeMultiplier * durationInMonths);
+
+        try {
+            UserController userController = new UserController();
+            userController.updateUserExp(userId, experiencePoints);
+            System.out.println("Experience points updated successfully! " + experiencePoints + " points added.");
+        } catch (SQLException e) {
+            System.err.println("Failed to update experience points: " + e.getMessage());
+        }
     }
+
 }
