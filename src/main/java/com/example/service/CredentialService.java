@@ -97,8 +97,15 @@ public class CredentialService {
         }
 
         Credential jobExperience = new Credential();
+        jobExperience.setUserId(userId);
+        jobExperience.setCompanyName(companyName);
+        jobExperience.setJobTitle(jobTitle);
+        jobExperience.setStartDate(sqlStartDate);
+        jobExperience.setEndDate(sqlEndDate);
+        jobExperience.setJobDescription(jobDescription);
+        jobExperience.setJobType(jobType);
 
-        String insertJobExperienceQuery = "INSERT INTO job_experience (user_id, company_name, job_title, start_date, end_date, description) VALUES (?, ?, ?, ?, ?, ?)";
+        String insertJobExperienceQuery = "INSERT INTO job_experience (user_id, company_name, job_title, start_date, end_date, description, job_type) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(insertJobExperienceQuery)) {
@@ -115,6 +122,7 @@ public class CredentialService {
             }
 
             stmt.setString(6, jobExperience.getJobDescription());
+            stmt.setString(7, jobExperience.getJobType());
 
             stmt.executeUpdate();
             System.out.println("Job experience added successfully!");
@@ -124,6 +132,7 @@ public class CredentialService {
             throw e;
         }
     }
+
 
     private Date parseDate(String dateStr) {
         try {

@@ -19,6 +19,7 @@ public class Credential {
     private Date startDate;
     private Date endDate;
     private String jobDescription;
+    private String jobType;
 
     // Getters and Setters for Achievement fields
     public int getCredentialId() {
@@ -124,5 +125,13 @@ public class Credential {
 
     public void setJobDescription(String jobDescription) {
         this.jobDescription = jobDescription;
+    }
+
+    public String getJobType() {
+        return jobType;
+    }
+
+    public void setJobType(String jobType) {
+        this.jobType = jobType;
     }
 }

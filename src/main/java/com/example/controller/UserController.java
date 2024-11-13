@@ -301,62 +301,107 @@ public class UserController {
         }
     }
 
-    public <Achievement, Experience> void viewAccount(int loggedInUserId) {
-        try {
-            User user = userDAO.getUserById(loggedInUserId);
-            int level = calculateLevel(user.getExp());
+    public void viewAccount(int userId) throws SQLException {
+        try (Connection conn = getConnection()) {
 
-            System.out.println("\n--- Account Details ---\n");
-            System.out.printf("Full Name   : %s\n", user.getFullName());
-            System.out.printf("Level       : %d\n", level);
-            System.out.printf("Profession  : %s\n\n", user.getProfession());
-
-            System.out.println("----- Other Details -----");
-            System.out.printf("Email           : %s\n", user.getEmail());
-            System.out.printf("Contact Number  : %s\n", user.getContactNumber());
-            System.out.printf("Birthday        : %s\n", user.getBirthday());
-            System.out.printf("Height          : %d cm\n", user.getHeight());
-            System.out.printf("Weight          : %d kg\n", user.getWeight());
-            System.out.println();
-
-            System.out.println("Experience:");
-            List<Experience> experiences = (List<Experience>) userDAO.getUserById(loggedInUserId);
-            if (experiences.isEmpty()) {
-                System.out.println("  No experience records found.");
-            } else {
-                for (Experience exp : experiences) {
-                    System.out.println("  Title         : " + credential.getCompanyName());
-                    System.out.println("  Position/Role : " + credential.getJobTitle());
-                    System.out.println("  Date          : " + credential.getStartDate() + " - " + credential.getEndDate());
-                    System.out.println("  Description   : " + credential.getJobDescription());
-                    System.out.println("  ---------------------");
+            User user = new User();
+            String userQuery = "SELECT ud.full_name, ud.profession, u.exp " +
+                    "FROM users u " +
+                    "JOIN user_details ud ON u.user_id = ud.user_id " +
+                    "WHERE u.user_id = ?";
+            try (PreparedStatement userStmt = conn.prepareStatement(userQuery)) {
+                userStmt.setInt(1, userId);
+                ResultSet userRs = userStmt.executeQuery();
+                if (userRs.next()) {
+                    user.setFullName(userRs.getString("full_name"));
+                    user.setProfession(userRs.getString("profession"));
+                    user.setExp(userRs.getInt("exp"));
+                } else {
+                    System.out.println("User not found.");
+                    return;
                 }
             }
 
-            System.out.println("Achievements:");
-            List<Achievement> achievements = (List<Achievement>) userDAO.getUserById(loggedInUserId);
-            if (achievements.isEmpty()) {
-                System.out.println("  No achievements found.");
-            } else {
-                for (Achievement ach : achievements) {
-                    System.out.println("  Name         : " + credential.getAchievementName());
-                    System.out.println("  Category     : " + credential.getCategory());
-                    System.out.println("  Date         : " + credential.getDateAchieved());
-                    System.out.println("  Description  : " + credential.getDescription());
+            System.out.println("========== User Profile ==========");
+            System.out.println("Full Name    : " + user.getFullName());
+            System.out.println("Level        : " + calculateLevel(user.getExp())); // Assuming you have a level calculation method
+            System.out.println("Profession   : " + user.getProfession());
 
-                    if (credential.getNotes() != null && !credential.getNotes().isEmpty()) {
-                        System.out.println("  Note         : " + credential.getNotes());
-                    }
-                    System.out.println("  ---------------------");
+            String detailsQuery = "SELECT contact_number, email, age, height, weight, gender " +
+                    "FROM user_details WHERE user_id = ?";
+            try (PreparedStatement detailsStmt = conn.prepareStatement(detailsQuery)) {
+                detailsStmt.setInt(1, userId);
+                ResultSet detailsRs = detailsStmt.executeQuery();
+                if (detailsRs.next()) {
+                    user.setContactNumber(detailsRs.getString("contact_number"));
+                    user.setEmail(detailsRs.getString("email"));
+                    user.setAge(detailsRs.getInt("age"));
+                    user.setHeight(detailsRs.getFloat("height"));
+                    user.setWeight(detailsRs.getFloat("weight"));
+                    user.setGender(detailsRs.getString("gender"));
                 }
             }
-            System.out.println("=========================================");
 
-        } catch (SQLException e) {
-            System.err.println("Error retrieving account information: " + e.getMessage());
+            System.out.println("\n========== Other Details ==========");
+            System.out.println("Contact Number : " + user.getContactNumber());
+            System.out.println("Email          : " + user.getEmail());
+            System.out.println("Age            : " + user.getAge());
+            System.out.println("Height         : " + user.getHeight() + " cm");
+            System.out.println("Weight         : " + user.getWeight() + " kg");
+            System.out.println("Gender         : " + user.getGender());
+
+            System.out.println("\n========== Credentials ==========");
+
+            String experienceQuery = "SELECT job_title, company_name, start_date, end_date, description, job_type " +
+                    "FROM job_experience WHERE user_id = ?";
+            try (PreparedStatement expStmt = conn.prepareStatement(experienceQuery)) {
+                expStmt.setInt(1, userId);
+                ResultSet expRs = expStmt.executeQuery();
+                System.out.println("\n--- Experience ---");
+                while (expRs.next()) {
+                    Credential experience = new Credential();
+                    experience.setJobTitle(expRs.getString("job_title"));
+                    experience.setCompanyName(expRs.getString("company_name"));
+                    experience.setStartDate(expRs.getDate("start_date"));
+                    experience.setEndDate(expRs.getDate("end_date"));
+                    experience.setJobType(expRs.getString("job_type"));
+                    experience.setJobDescription(expRs.getString("description"));
+
+                    System.out.println("Title       : " + experience.getJobTitle());
+                    System.out.println("Company     : " + experience.getCompanyName());
+                    System.out.println("Start Date  : " + experience.getStartDate());
+                    System.out.println("End Date    : " + experience.getEndDate());
+                    System.out.println("Job Type    : " + experience.getJobType());
+                    System.out.println("Description : " + experience.getJobDescription());
+                    System.out.println("-------------------------------");
+                }
+            }
+
+            String achievementQuery = "SELECT achievement_name, category, date_achieved, description, notes " +
+                    "FROM credentials WHERE user_id = ?";
+            try (PreparedStatement achStmt = conn.prepareStatement(achievementQuery)) {
+                achStmt.setInt(1, userId);
+                ResultSet achRs = achStmt.executeQuery();
+                System.out.println("\n--- Achievements ---");
+                while (achRs.next()) {
+                    Credential achievement = new Credential();
+                    achievement.setAchievementName(achRs.getString("achievement_name"));
+                    achievement.setCategory(achRs.getString("category"));
+                    achievement.setDateAchieved(achRs.getDate("date_achieved"));
+                    achievement.setDescription(achRs.getString("description"));
+                    achievement.setNotes(achRs.getString("notes"));
+
+                    System.out.println("Achievement : " + achievement.getAchievementName());
+                    System.out.println("Category    : " + achievement.getCategory());
+                    System.out.println("Date        : " + achievement.getDateAchieved());
+                    System.out.println("Description : " + achievement.getDescription());
+                    System.out.println("Notes       : " + achievement.getNotes());
+                    System.out.println("-------------------------------");
+                }
+            }
+            System.out.println("=================================");
         }
     }
-
 
     public int calculateLevel(int exp) {
         int level = 0;

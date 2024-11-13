@@ -58,6 +58,7 @@ public class Main {
                                         break;
                                     case 3:
                                         userController.editUserInfo(userId);
+                                        break;
                                     case 4:
                                         userController.displayDailyRoutines(userId);
                                         break;

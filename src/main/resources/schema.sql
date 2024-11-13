@@ -47,7 +47,7 @@ CREATE TABLE job_experience (
     start_date DATE NOT NULL,
     end_date DATE,
     description TEXT,
-    exp_points INT NOT NULL,
+    job_type VARCHAR(20),
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
