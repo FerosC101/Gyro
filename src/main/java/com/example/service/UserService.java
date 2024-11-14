@@ -17,80 +17,47 @@ import java.util.Scanner;
 import static com.example.connection.DBConnection.getConnection;
 
 
-public class UserService {
+public class UserService extends AccountService {
     private final DBConnection dbConnection = new DBConnection();
     private final User user = new User();
     private final Scanner scanner = new Scanner(System.in);
     private final UserDAO userDAO = new UserDAO();
     private final CredentialController credentialController = new CredentialController();
 
-    public Integer register(String username, String password) throws SQLException {
-        String checkUserQuery = "SELECT * FROM users WHERE username = ?";
-        String insertUserQuery = "INSERT INTO users (username, password) VALUES (?, ?)";
-        Integer userId = null;
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement checkUserStmt = conn.prepareStatement(checkUserQuery);
-             PreparedStatement insertUserStmt = conn.prepareStatement(insertUserQuery, Statement.RETURN_GENERATED_KEYS)) {
-
-            checkUserStmt.setString(1, username);
-            ResultSet rs = checkUserStmt.executeQuery();
-
-            if (rs.next()) {
-                System.out.println("User already exists.");
-            } else {
-                insertUserStmt.setString(1, username);
-                insertUserStmt.setString(2, password);
-                int affectedRows = insertUserStmt.executeUpdate();
-
-                if (affectedRows > 0) {
-                    ResultSet generatedKeys = insertUserStmt.getGeneratedKeys();
-                    if (generatedKeys.next()) {
-                        userId = generatedKeys.getInt(1);
-                        System.out.println("User registered successfully! Your user ID is: " + userId);
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Registration failed: " + e.getMessage());
-            throw e;
-        }
-        return userId;
-    }
-
-    public Integer login(String username, String password) throws SQLException {
-        User user = new User();
-        String query = "SELECT user_id, password FROM users WHERE username = ?";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-
-            stmt.setString(1, username);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                String storedPassword = rs.getString("password");
-
-                if (password.equals(storedPassword)) {
-                    int userId = rs.getInt("user_id");
-                    System.out.println("Login successful!");
-                    user.setUserId(userId);
-                    return userId;
-                } else {
-                    System.out.println("Invalid username or password.");
-                }
-            } else {
-                System.out.println("Invalid username or password.");
-            }
-        }
-        return null;
-    }
-
     public void displayAdditionalQuestions(int userId) throws SQLException {
         System.out.println("Please answer the following questions:");
         collectAdditionalInfo(userId);
         collectLifeExperience(userId);
     }
+
+    public void manageUserSession(int userId, Scanner scanner) throws SQLException {
+        boolean loggedIn = true;
+        while (loggedIn) {
+            System.out.println("[1] Add Credential");
+            System.out.println("[2] Add Job Experience");
+            System.out.println("[3] Edit Information");
+            System.out.println("[4] View Routines");
+            System.out.println("[5] View Account");
+            System.out.println("[6] Logout");
+            System.out.print("Choose an option: ");
+            int option = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (option) {
+                case 1 -> credentialController.addAchievement(userId);
+                case 2 -> credentialController.addJobExperience(userId);
+                case 3 -> editUserInfo(userId);
+                case 4 -> displayDailyRoutines(userId);
+                case 5 -> viewAccount(userId);
+                case 6 -> {
+                    System.out.println("Logging out...");
+                    loggedIn = false;
+                }
+                default -> System.out.println("Invalid option. Please try again.");
+            }
+        }
+    }
+
 
     public void collectAdditionalInfo(int userId) throws SQLException {
         Scanner scanner = new Scanner(System.in);
@@ -474,7 +441,7 @@ public class UserService {
 
             System.out.println("========== User Profile ==========");
             System.out.println("Full Name    : " + user.getFullName());
-            System.out.println("Level        : " + calculateLevel(user.getExp())); // Assuming you have a level calculation method
+            System.out.println("Level        : " + calculateLevel(user.getExp()));
             System.out.println("Profession   : " + user.getProfession());
 
             String detailsQuery = "SELECT contact_number, email, age, height, weight, gender " +
@@ -549,7 +516,7 @@ public class UserService {
                     System.out.println("-------------------------------");
                 }
             }
-            System.out.println("=================================");
+            System.out.println("=================================\n");
         }
     }
 
@@ -606,7 +573,7 @@ public class UserService {
                 }
             }
 
-            System.out.println("========== Options ==========");
+            System.out.println("\n========== Options ==========");
             System.out.println("[1] Next 5 Users");
             System.out.println("[2] Previous 5 Users");
             System.out.println("[3] Search User by Full Name");
@@ -623,7 +590,7 @@ public class UserService {
                     if (offset >= limit) {
                         offset -= limit;
                     } else {
-                        System.out.println("You're already at the beginning of the list.");
+                        System.out.println("\nYou're already at the beginning of the list.\n");
                     }
                     break;
                 case 3:
@@ -652,8 +619,8 @@ public class UserService {
 
                 if (rs.next()) {
                     int userId = rs.getInt("user_id");
-                    System.out.println("\nUser found! Displaying full information...");
-                    viewAccount(userId); // Call the viewAccount method to display full user info
+                    System.out.println("\nUser found! Displaying full information...\n");
+                    viewAccount(userId);
                 } else {
                     System.out.println("User not found.");
                 }

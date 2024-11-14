@@ -1,44 +1,68 @@
 package com.example.controller;
 
-import com.example.connection.UserDAO;
-import com.example.model.Credential;
-import com.example.model.User;
-import com.example.service.CredentialService;
 import com.example.service.UserService;
+import com.example.view.Menu;
 
-import java.sql.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.SQLException;
 import java.util.Scanner;
 
-import static com.example.connection.DBConnection.getConnection;
-
 public class UserController {
-    private final User user;
-    private final UserService userService;
-    private final CredentialService credentialService;
-    private final UserDAO userDAO;
-    private final Credential credential;
-
-    public UserController() {
-        this.credential = new Credential();
-        this.userDAO = new UserDAO();
-        this.credentialService = new CredentialService();
-        this.userService = new UserService();
-        this.user = new User();
-    }
-
-    public Integer register(String username, String password) throws SQLException {
-        return userService.register(username, password);
-    }
-
-    public Integer login(String username, String password) throws SQLException {
-        return userService.login(username, password);
-    }
+    private final UserService userService = new UserService();
+    private final CredentialController credentialController = new CredentialController();
+    private final ViewController viewController = new ViewController();
 
     public void startApplication() {
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            Menu.displayMainMenu();
+            System.out.print("Enter choice: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+
+            try {
+                switch (choice) {
+                    case 1 -> viewController.viewAllUsers();
+                    case 2 -> loginUser(scanner);
+                    case 3 -> registerUser(scanner);
+                    case 4 -> {
+                        System.out.println("Exiting... Goodbye!");
+                        return;
+                    }
+                    default -> System.out.println("Invalid choice. Please try again.");
+                }
+            } catch (SQLException e) {
+                System.err.println("An error occurred: " + e.getMessage());
+            }
+        }
+    }
+
+    private void registerUser(Scanner scanner) throws SQLException {
+        System.out.print("\nEnter username: ");
+        String username = scanner.nextLine();
+        System.out.print("Enter password: ");
+        String password = scanner.nextLine();
+
+        Integer userId = userService.register(username, password);
+        if (userId != null) {
+            System.out.println("\n====Registration successful! Please provide additional information.====\n");
+            viewController.displayAdditionalQuestions(userId);
+        } else {
+            System.out.println("Registration failed.");
+        }
+    }
+
+    private void loginUser(Scanner scanner) throws SQLException {
+        System.out.print("Enter username: ");
+        String username = scanner.nextLine();
+        System.out.print("Enter password: ");
+        String password = scanner.nextLine();
+
+        Integer userId = userService.login(username, password);
+        if (userId != null) {
+            System.out.println("Welcome back, " + username + "!");
+            userService.manageUserSession(userId, scanner);
+        } else {
+            System.out.println("Login failed. Please try again.");
+        }
     }
 }
