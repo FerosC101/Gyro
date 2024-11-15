@@ -30,6 +30,7 @@ public class UserService extends AccountService {
         collectLifeExperience(userId);
     }
 
+    @Override
     public void manageUserSession(int userId, Scanner scanner) throws SQLException {
         boolean loggedIn = true;
         while (loggedIn) {

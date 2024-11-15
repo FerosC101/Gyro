@@ -1,14 +1,15 @@
 package com.example.controller;
 
+import com.example.service.AdminService;
 import com.example.service.UserService;
+import com.example.service.AccountService;
 import com.example.view.Menu;
 
 import java.sql.SQLException;
 import java.util.Scanner;
 
 public class UserController {
-    private final UserService userService = new UserService();
-    private final CredentialController credentialController = new CredentialController();
+    private AccountService userService;
     private final ViewController viewController = new ViewController();
 
     public void startApplication() {
@@ -42,9 +43,10 @@ public class UserController {
         System.out.print("Enter password: ");
         String password = scanner.nextLine();
 
+        userService = new UserService();
         Integer userId = userService.register(username, password);
         if (userId != null) {
-            System.out.println("\n====Registration successful! Please provide additional information.====\n");
+            System.out.println("\n==== Registration successful! Please provide additional information. ====\n");
             viewController.displayAdditionalQuestions(userId);
         } else {
             System.out.println("Registration failed.");
@@ -57,12 +59,49 @@ public class UserController {
         System.out.print("Enter password: ");
         String password = scanner.nextLine();
 
-        Integer userId = userService.login(username, password);
-        if (userId != null) {
-            System.out.println("Welcome back, " + username + "!");
-            userService.manageUserSession(userId, scanner);
+        if ("admin".equals(username) && "admin123".equals(password)) {
+            System.out.println("Admin login successful!");
+            userService = new AdminService();
+            adminMenu(scanner);
         } else {
-            System.out.println("Login failed. Please try again.");
+            userService = new UserService();
+            Integer userId = userService.login(username, password);
+            if (userId != null) {
+                System.out.println("Welcome back, " + username + "!");
+                userService.manageUserSession(userId, scanner);
+            } else {
+                System.out.println("Login failed. Please try again.");
+            }
+        }
+    }
+
+    private void adminMenu(Scanner scanner) throws SQLException {
+        if (userService instanceof AdminService adminService) {
+            boolean loggedIn = true;
+            while (loggedIn) {
+                System.out.println("\n==== Admin Menu ====");
+                System.out.println("[1] View All Users");
+                System.out.println("[2] Delete User");
+                System.out.println("[3] Logout");
+                System.out.print("Choose an option: ");
+                int option = scanner.nextInt();
+
+                switch (option) {
+                    case 1 -> adminService.viewAllUsers();
+                    case 2 -> {
+                        System.out.print("Enter User ID to delete: ");
+                        int userId = scanner.nextInt();
+                        adminService.deleteUser(userId);
+                    }
+                    case 3 -> {
+                        System.out.println("Logging out...");
+                        loggedIn = false;
+                    }
+                    default -> System.out.println("Invalid option. Please try again.");
+                }
+            }
+        } else {
+            System.out.println("Access denied: Admin privileges are required to access this menu.");
         }
     }
 }

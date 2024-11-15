@@ -1,17 +1,15 @@
 package com.example.service;
 
 import com.example.connection.DBConnection;
-import com.example.model.User;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Scanner;
 
-public class AccountService {
-    protected final DBConnection dbConnection = new DBConnection();
-
+public abstract class AccountService {
     public Integer register(String username, String password) throws SQLException {
         String checkUserQuery = "SELECT * FROM users WHERE username = ?";
         String insertUserQuery = "INSERT INTO users (username, password) VALUES (?, ?)";
@@ -69,4 +67,6 @@ public class AccountService {
         }
         return null;
     }
+
+    public abstract void manageUserSession(int userId, Scanner scanner) throws SQLException;
 }
