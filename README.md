@@ -4,7 +4,7 @@ This program is a console-based system that transforms achievements and skills i
 ## Features
 
 - **User Registration and Login:** Secure registration and login processes with credentials stored in a MySQL database.
-- **Admin System:** Delete a user and delete credentials.
+- **Admin System:** Delete users and every information they have in the database.
 - **Achievements and Job Experience Tracking:** Record achievements and job experiences, calculate experience points (EXP), and visualize user progress.
 - **Daily Routine Assignment:** Assign daily tasks and routines to users, calculate EXP for task completion, and visualize progress.
 - **Level Calculation:** Track and display user levels based on accumulated experience, with custom EXP calculations.
@@ -62,7 +62,7 @@ Gyro/
 ### 3. **Polymorphism**
 - **Implementation**:
    - **Method Overriding**: **AdminService** and **UserService** override **manageUserSession** from **AccountService** to provide different user experiences based on role (admin vs. standard user).
-   - **Dynamic Binding**: At runtime, depending on whether a user is an admin, `UserController` dynamically calls the `AdminService` or `UserService` implementation.
+   - **Dynamic Binding**: At runtime, depending on whether a user is an admin, **UserController** dynamically calls the **AdminService** or **UserService** implementation.
 ### 4. **Abstraction**
 - **Implementation**:
    - The **AccountService** is an abstract class that provides a structure for account-related actions like **register** and **login** but delegates specific implementation details to subclasses (**AdminService** and **UserService**).
