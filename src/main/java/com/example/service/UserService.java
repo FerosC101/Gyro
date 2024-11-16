@@ -20,7 +20,6 @@ import static com.example.connection.DBConnection.getConnection;
 public class UserService extends AccountService {
     private final DBConnection dbConnection = new DBConnection();
     private final User user = new User();
-    private final Scanner scanner = new Scanner(System.in);
     private final UserDAO userDAO = new UserDAO();
     private final CredentialController credentialController = new CredentialController();
 
@@ -34,6 +33,7 @@ public class UserService extends AccountService {
     public void manageUserSession(int userId, Scanner scanner) throws SQLException {
         boolean loggedIn = true;
         while (loggedIn) {
+            System.out.println("\n==== User Menu ====");
             System.out.println("[1] Add Credential");
             System.out.println("[2] Add Job Experience");
             System.out.println("[3] Edit Information");
@@ -101,7 +101,7 @@ public class UserService extends AccountService {
 
         int ageExp = calculateAgeExp(user);
         userDAO.updateUserExp(userId, ageExp);
-        System.out.println("Age-based EXP of " + ageExp + " has been added to your account.");
+        System.out.println("\nAge-based EXP of " + ageExp + " has been added to your account.");
 
         String insertDetailsSQL = "INSERT INTO user_details (user_id, full_name, birthday, contact_number, email, age, height, weight, gender, profession) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -121,7 +121,7 @@ public class UserService extends AccountService {
 
             int rowsInserted = pstmt.executeUpdate();
             if (rowsInserted > 0) {
-                System.out.println("Additional information collected and saved successfully!");
+                System.out.println("Additional information collected and saved successfully!\n");
             } else {
                 System.out.println("Failed to save additional information.");
             }
@@ -147,7 +147,8 @@ public class UserService extends AccountService {
     public void editUserInfo(int userId) throws SQLException {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Edit your information. Leave the field empty if you do not wish to change it.");
+        System.out.println("\n==== Edit Information ====");
+        System.out.println("\nEdit your information. Leave the field empty if you do not wish to change it.");
 
         System.out.print("Enter new contact number (leave blank to keep current): ");
         String contactNumber = scanner.nextLine();
@@ -212,52 +213,52 @@ public class UserService extends AccountService {
         Scanner scanner = new Scanner(System.in);
         int totalExp = 0;
 
-        System.out.println("Please answer the following questions by rating on a scale from 1-10.");
+        System.out.println("\n ==== Please answer the following questions by rating on a scale from 1-10. ====");
 
         System.out.println("\n1. Rate your physical fitness level on a scale from 1-10:");
-        totalExp += scanner.nextInt() * 50 + 50;
+        totalExp += scanner.nextInt() * 50 + 100;
 
         System.out.println("2. Rate your mental resilience on a scale from 1-10:");
-        totalExp += scanner.nextInt() * 50 + 50;
+        totalExp += scanner.nextInt() * 50 + 100;
 
         System.out.println("3. Rate your diet balance on a scale from 1-10:");
         int dietBalance = scanner.nextInt();
-        totalExp += dietBalance * 50 + 50;
+        totalExp += dietBalance * 50 + 100;
 
         System.out.println("4. Rate your sleep quality on a scale from 1-10:");
         int sleepQuality = scanner.nextInt();
-        totalExp += sleepQuality * 50 + 50;
+        totalExp += sleepQuality * 50 + 100;
 
         System.out.println("5. Rate your stress management skills on a scale from 1-10:");
         int stressManagement = scanner.nextInt();
-        totalExp += stressManagement * 50 + 50;
+        totalExp += stressManagement * 50 + 100;
 
         System.out.println("6. Rate your work-life balance on a scale from 1-10:");
         int workLifeBalance = scanner.nextInt();
-        totalExp += workLifeBalance * 50 + 50;
+        totalExp += workLifeBalance * 50 + 100;
 
         System.out.println("7. Rate your social interaction quality on a scale from 1-10:");
         int socialInteraction = scanner.nextInt();
-        totalExp += socialInteraction * 50 + 50;
+        totalExp += socialInteraction * 50 + 100;
 
         System.out.println("8. Rate your financial management skills on a scale from 1-10:");
         int financialManagement = scanner.nextInt();
-        totalExp += financialManagement * 50 + 50;
+        totalExp += financialManagement * 50 + 100;
 
         System.out.println("9. Rate your time management skills on a scale from 1-10:");
         int timeManagement = scanner.nextInt();
-        totalExp += timeManagement * 50 + 50;
+        totalExp += timeManagement * 50 + 100;
 
         System.out.println("10. Rate your creativity level on a scale from 1-10:");
         int creativity = scanner.nextInt();
-        totalExp += creativity * 50 + 50;
+        totalExp += creativity * 50 + 100;
 
         userDAO.updateUserExp(userId, totalExp);
         System.out.println("Thank you for completing the life experience questionnaire. Your responses have been recorded, and your total experience points have been added.");
 
         boolean choosing = true;
         while (choosing) {
-            System.out.println("What would you like to do next?");
+            System.out.println("\n=== What would you like to do next? ===");
             System.out.println("[1] Add Job Experience");
             System.out.println("[2] Add Achievement");
             System.out.println("[3] Continue to Log In");
@@ -274,8 +275,9 @@ public class UserService extends AccountService {
                     credentialController.addAchievement(userId);
                     break;
                 case 3:
-                    System.out.println("Continuing to log in...");
+                    System.out.println("\nRedirecting to User Menu...");
                     choosing = false;
+                    manageUserSession(userId, scanner);
                     break;
                 default:
                     System.out.println("Invalid option. Please choose again.");

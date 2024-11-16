@@ -10,6 +10,9 @@ import java.sql.Statement;
 import java.util.Scanner;
 
 public abstract class AccountService {
+
+    public abstract void manageUserSession(int userId, Scanner scanner) throws SQLException;
+
     public Integer register(String username, String password) throws SQLException {
         String checkUserQuery = "SELECT * FROM users WHERE username = ?";
         String insertUserQuery = "INSERT INTO users (username, password) VALUES (?, ?)";
@@ -68,5 +71,5 @@ public abstract class AccountService {
         return null;
     }
 
-    public abstract void manageUserSession(int userId, Scanner scanner) throws SQLException;
+
 }

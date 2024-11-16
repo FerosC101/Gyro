@@ -3,7 +3,8 @@ CREATE DATABASE `wandat`;
 CREATE TABLE users (
     user_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(100) NOT NULL
+    password VARCHAR(100) NOT NULL,
+    exp INT DEFAULT(0)
 );
 
 CREATE TABLE credentials (

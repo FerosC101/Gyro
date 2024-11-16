@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.util.Scanner;
 
 public class AdminService extends AccountService {
-
     private final UserDAO userDAO = new UserDAO();
 
     @Override
@@ -15,6 +14,7 @@ public class AdminService extends AccountService {
         boolean loggedIn = true;
 
         while (loggedIn) {
+            System.out.println("\n==== Admin Menu ====");
             System.out.println("[1] View All Users");
             System.out.println("[2] Remove User");
             System.out.println("[3] Logout");
@@ -23,7 +23,11 @@ public class AdminService extends AccountService {
 
             switch (option) {
                 case 1 -> viewAllUsers();
-                case 2 -> deleteUser(userId);
+                case 2 -> {
+                    System.out.print("Enter the User ID to delete: ");
+                    int userIdToDelete = scanner.nextInt();
+                    deleteUser(userIdToDelete);
+                }
                 case 3 -> {
                     System.out.println("Logging out...");
                     loggedIn = false;
