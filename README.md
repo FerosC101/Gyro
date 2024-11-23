@@ -10,45 +10,6 @@ This program is a console-based system that transforms achievements and skills i
 - **Level Calculation:** Track and display user levels based on accumulated experience, with custom EXP calculations.
 - **Profile Customization:** Users can update their profiles with new contact details, height, weight, and profession.
 
-## File Structure
-
-```plaintext
-Gyro/
-├── src/
-│   ├── Main.java                             # Main entry point to initialize the application
-│   │
-│   ├── controller/                           # Controllers for handling specific user actions
-│   │   ├── UserController.java               # Manages user interactions and account views
-│   │   ├── AdminController.java              # Manages admin-specific actions like banning users
-│   │   └── CredentialController.java         # Handles credential-related actions
-│   │
-│   ├── model/                                # Data models representing the entities
-│   │   ├── User.java                         # Model for user data with properties and methods
-│   │   └── Credential.java                   # Model for credentials (achievements and experiences)
-│   │
-│   ├── service/                              # Business logic layer containing service classes
-│   │   ├── AccountService.java               # Abstract class for account-related services
-│   │   ├── UserService.java                  # Service for standard user actions
-│   │   ├── AdminService.java                 # Service for admin-specific actions (polymorphic with UserService)
-│   │   └── CredentialService.java            # Service for managing user credentials
-│   │
-│   ├── connection/                           # Data Access Objects for database interactions
-│   │   ├── UserDAO.java                      # DAO for user data (CRUD operations)
-│   │   ├── CredentialDAO.java                # DAO for credential data (CRUD operations)
-│   │   └── DBConnection.java                 # Utility for establishing and managing database connections
-│   │
-│   ├── util/                                 # Utility classes and constants
-│   │   └── Constants.java                    # Application-wide constants and configurations
-│   │
-│   ├── view/                                 # Classes for managing display and user interactions
-│   │   └── Menu.java                         # Main menu display and input handler
-│   │
-│   └── resources/                            # Configuration and resource files
-│       ├── schema.sql                        # Creadting the Database and the tables in the database
-│       └── db.properties                     # Database configuration settings
-│
-└── Readme.md
-```
 ## Application of the 4 Principles of Object-Oriented Programming
 ### 1. **Encapsulation**
 - **Implementation**:
@@ -76,3 +37,148 @@ Gyro/
 
 ### 2. **SDG 8: Decent Work and Economic Growth** 
 - It redefines how people present their skills and achievements, promoting a skills-based approach to employment. By highlighting achievements in a gamified format, it provides an innovative way to increase employability and help users reach their career potential.
+
+## How to Run Gyro
+
+
+#### **Prerequisites**
+Before running the application, ensure you have the following installed:
+1. **Java Development Kit (JDK)** (minimum version 8 or above).
+2. **Apache Maven** (for dependency management, optional if precompiled).
+3. **MySQL Server** (for the database).
+4. A suitable **IDE** (e.g., IntelliJ IDEA, Eclipse, VS Code) or a terminal to compile and run the program.
+
+---
+
+#### **Database Setup**
+
+1. **Create the Database**:
+  - Open MySQL Workbench or any SQL editor.
+  - Run the script in the **schema.sql** file to set up the database and tables.
+  
+
+2. **Update `Db.properties`**:
+  - Configure database connection details in the `db.properties` file.
+  - Replace with your local database credentials:
+
+    ```
+    db.url=jdbc:mysql://localhost:3306/wandat
+    db.user=YOUR_MYSQL_USERNAME
+    db.password=YOUR_MYSQL_PASSWORD
+    ```
+
+3. **Test Database Connection**:
+  - Run the application to confirm database connectivity. Errors like `SQLException` indicate issues in connection configuration.
+
+---
+
+#### **Project File Structure**
+
+The project adheres to an organized structure for maintainability:
+
+```
+src/
+├── com.example/
+│   ├── connection/         # Database connections and DAOs
+│   │   ├── DBConnection.java
+│   │   ├── UserDAO.java
+│   │   └── CredentialDAO.java
+│   │
+│   ├── controller/         # Business logic controllers
+│   │   ├── AdminController.java    
+│   │   ├── UserController.java
+│   │   └── CredentialController.java
+│   │
+│   ├── model/              # Models for entities
+│   │   ├── User.java
+│   │   └── Credential.java
+│   │
+│   ├── service/            # Application services and logic
+│   │   ├── AccountService.java
+│   │   ├── UserService.java
+│   │   ├── AdminService.java           # Service for admin-specific actions (polymorphic with UserService)
+│   │   └── CredentialService.java 
+│   │
+│   ├── util/               # Utility classes
+│   │   └── Constants.java
+│   │
+│   ├── view/               # User interaction components
+│   │   └── Menu.java
+│   │
+│   └── Main.java           # Application entry point
+│
+└── resources/              # Configuration files
+    ├── db.properties       # Database configurations
+    └── schema.sql          # Database schema
+```
+
+---
+
+#### **Running the Application**
+
+1. **Compile the Application**:
+  - Open a terminal and navigate to the project directory.
+  - Compile all `.java` files:
+    ```bash
+    javac -d out src/com/example/main.java
+    ```
+
+2. **Run the Application**:
+  - Start the program from the `Main` class:
+    ```bash
+    java -cp out com.example.Main
+    ```
+
+3. **Interacting with the Program**:
+  - **Main Menu Options**:
+    ```
+    ==== Welcome to Gyro ====
+    [1] View Global Server
+    [2] Login
+    [3] Register
+    [4] Exit
+    ```
+
+  - **User Features**:
+    - Register, provide details, and log in.
+    - View, add, and edit user credentials (achievements and job experience).
+    - Participate in routines and earn EXP.
+
+  - **Admin Features**:
+    - View all users globally.
+    - Delete user accounts.
+
+---
+
+#### **Additional Notes**
+
+- **User Authentication**:
+  - Regular users log in with their credentials.
+  - Admin credentials:
+    ```
+    Username: admin
+    Password: admin123
+    ```
+
+- **EXP and Level Calculation**:
+  - EXP is earned through achievements, job experience, and daily routines.
+  - Level progression:
+    - Base EXP for Level 1: `1000`
+    - Increment per level: `+250`
+    - Formula integrated into services.
+
+- **Known Dependencies**:
+  - **MySQL Connector**: Ensure `mysql-connector-java` is in the classpath for database interactions.
+  - Maven dependency for MySQL:
+    ```xml
+    <dependency>
+        <groupId>mysql</groupId>
+        <artifactId>mysql-connector-java</artifactId>
+        <version>8.0.31</version>
+    </dependency>
+    ```
+
+---
+
+
+Enjoy exploring **Gyro**!
