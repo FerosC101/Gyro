@@ -54,7 +54,7 @@ Before running the application, ensure you have the following installed:
 
 1. **Create the Database**:
   - Open MySQL Workbench or any SQL editor.
-  - Run the script in the **schema.sql** file to set up the database and tables.
+  - Run the script in the **init.sql** file to set up the database and tables.
   
 
 2. **Update `Db.properties`**:
@@ -109,7 +109,7 @@ src/
 │
 └── resources/              # Configuration files
     ├── db.properties       # Database configurations
-    └── schema.sql          # Database schema
+    └── init.sql            # Database schema
 ```
 
 ---
